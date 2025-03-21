@@ -62,20 +62,23 @@ jobs:
           # Décode le kubeconfig
           echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > kubeconfig.yaml
           
-          # Affiche le contenu (attention aux données sensibles)
-          echo "=== Kubeconfig content ==="
-          grep "server:" kubeconfig.yaml
+          # Donne les bons droits au fichier
+          chmod 600 kubeconfig.yaml
           
-          # Configure kubectl
-          export KUBECONFIG=kubeconfig.yaml
+          # Configure kubectl explicitement
+          export KUBECONFIG="$PWD/kubeconfig.yaml"
+          
+          # Vérifie la configuration
+          echo "=== Kubectl config ==="
+          kubectl config view --raw
           
           # Test la connexion
-          kubectl config view --minify | grep server
-
-          # Vérifie que kubectl utilise le bon fichier
-          echo "KUBECONFIG=$KUBECONFIG"
+          echo "=== Testing connection ==="
+          kubectl cluster-info
 
       - name: Update Kubernetes deployment
+        env:
+          KUBECONFIG: ${{ github.workspace }}/kubeconfig.yaml
         run: |
           kubectl set image deployment/auth-service \
             auth-service=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}
