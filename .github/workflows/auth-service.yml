@@ -38,9 +38,14 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=sha
+            type=sha,format=long
             type=ref,event=branch
             latest
+
+      - name: Debug image tags
+        run: |
+          echo "Tags to be used:"
+          echo "${{ steps.meta.outputs.tags }}"
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
@@ -51,6 +56,11 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Verify image push
+        run: |
+          echo "Verifying pushed image..."
+          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}
 
       - name: Install kubectl
         uses: azure/setup-kubectl@v3
@@ -83,11 +93,22 @@ jobs:
           # Vérifie si le déploiement existe
           if ! kubectl get deployment auth-service &> /dev/null; then
             # Crée le déploiement s'il n'existe pas
-            kubectl create deployment auth-service --image=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}
+            kubectl create deployment auth-service --image=ghcr.io/arenz2001/cesi-eats/auth-service:sha-${{ github.sha }}
             # Configure le port si nécessaire
             kubectl expose deployment auth-service --port=3000 --target-port=3000
           else
             # Met à jour l'image si le déploiement existe
             kubectl set image deployment/auth-service \
-              auth-service=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}
+              auth-service=ghcr.io/arenz2001/cesi-eats/auth-service:sha-${{ github.sha }}
           fi
+
+      - name: Debug deployment
+        env:
+          KUBECONFIG: ${{ github.workspace }}/kubeconfig.yaml
+        run: |
+          echo "Checking deployment status..."
+          kubectl get deployment auth-service -o yaml
+          echo "\nChecking pods..."
+          kubectl get pods
+          echo "\nDescribing pods..."
+          kubectl describe pods -l app=auth-service
