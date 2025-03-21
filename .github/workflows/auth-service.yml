@@ -76,9 +76,17 @@ jobs:
           echo "=== Testing connection ==="
           kubectl cluster-info
 
-      - name: Update Kubernetes deployment
+      - name: Create or update deployment
         env:
           KUBECONFIG: ${{ github.workspace }}/kubeconfig.yaml
         run: |
-          kubectl set image deployment/auth-service \
-            auth-service=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}
+          # Vérifie si le déploiement existe
+          if ! kubectl get deployment auth-service &> /dev/null; then
+            # Crée le déploiement s'il n'existe pas
+            kubectl create deployment auth-service --image=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}
+            # Configure le port si nécessaire
+            kubectl expose deployment auth-service --port=3000 --target-port=3000
+          else
+            # Met à jour l'image si le déploiement existe
+            kubectl set image deployment/auth-service \
+              auth-service=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}
