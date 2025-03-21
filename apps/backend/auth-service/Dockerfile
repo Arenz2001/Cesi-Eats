@@ -7,7 +7,7 @@ COPY package*.json ./
 RUN npm ci
 
 COPY . .
-
+#provisoire
 EXPOSE 3000
 
 CMD ["npm", "start"] 
