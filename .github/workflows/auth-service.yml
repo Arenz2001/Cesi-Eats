@@ -9,7 +9,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}/auth-service
+  IMAGE_NAME: arenz2001/cesi-eats/auth-service
 
 jobs:
   build-and-deploy:
