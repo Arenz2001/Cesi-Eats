@@ -59,8 +59,21 @@ jobs:
 
       - name: Configure kubectl
         run: |
+          # Décode le kubeconfig
           echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > kubeconfig.yaml
+          
+          # Affiche le contenu (attention aux données sensibles)
+          echo "=== Kubeconfig content ==="
+          grep "server:" kubeconfig.yaml
+          
+          # Configure kubectl
           export KUBECONFIG=kubeconfig.yaml
+          
+          # Test la connexion
+          kubectl config view --minify | grep server
+
+          # Vérifie que kubectl utilise le bon fichier
+          echo "KUBECONFIG=$KUBECONFIG"
 
       - name: Update Kubernetes deployment
         run: |
