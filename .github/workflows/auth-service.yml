@@ -90,3 +90,4 @@ jobs:
             # Met à jour l'image si le déploiement existe
             kubectl set image deployment/auth-service \
               auth-service=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}
+          fi
