@@ -90,21 +90,14 @@ jobs:
         env:
           KUBECONFIG: ${{ github.workspace }}/kubeconfig.yaml
         run: |
-          # Vérifie si le déploiement existe
-          if ! kubectl get deployment auth-service &> /dev/null; then
-            # Crée le déploiement s'il n'existe pas
-            kubectl create deployment auth-service --image=ghcr.io/arenz2001/cesi-eats/auth-service:sha-${{ github.sha }}
-            
-            # Vérifie si le service existe avant de le créer
-            if ! kubectl get service auth-service &> /dev/null; then
-              # Configure le port si le service n'existe pas
-              kubectl expose deployment auth-service --port=3000 --target-port=3000
-            fi
-          else
-            # Met à jour l'image si le déploiement existe
-            kubectl set image deployment/auth-service \
-              auth-service=ghcr.io/arenz2001/cesi-eats/auth-service:sha-${{ github.sha }}
-          fi
+          # Update the image in the deployment file
+          sed -i "s|ghcr.io/Arenz2001/cesi-eats/auth-service:latest|ghcr.io/arenz2001/cesi-eats/auth-service:sha-${{ github.sha }}|g" k8s/auth-service/deployment.yaml
+          
+          # Apply the deployment
+          kubectl apply -f k8s/auth-service/deployment.yaml
+          
+          # Wait for rollout to complete
+          kubectl rollout status deployment/auth-service
 
       - name: Debug deployment
         env:
