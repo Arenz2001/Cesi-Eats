@@ -22,12 +22,18 @@ spec:
         env:
         - name: MONGODB_URI
           value: "mongodb://localhost:27017/auth"
+        volumeMounts:
+        - name: mongodb-storage
+          mountPath: /data/db
       - name: mongodb
         image: mongo:latest
         ports:
         - containerPort: 27017
+        volumeMounts:
+        - name: mongodb-storage
+          mountPath: /data/db
       volumes:
-      - name: mongodb-data
+      - name: mongodb-storage
         emptyDir: {}
 ---
 apiVersion: v1
