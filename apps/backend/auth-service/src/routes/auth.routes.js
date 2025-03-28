@@ -14,7 +14,7 @@ const registerValidation = [
   body('role').isIn(['client', 'restaurant', 'delivery', 'admin'])
 ];
 
-//login 
+//login validation
 const loginValidation = [
   body('email').isEmail().normalizeEmail(),
   body('password').notEmpty()
