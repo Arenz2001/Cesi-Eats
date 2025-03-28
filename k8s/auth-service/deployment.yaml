@@ -22,20 +22,13 @@ spec:
         env:
         - name: MONGODB_URI
           value: "mongodb://localhost:27017/auth"
-        volumeMounts:
-        - name: mongodb-data
-          mountPath: /data/db
       - name: mongodb
         image: mongo:latest
         ports:
         - containerPort: 27017
-        volumeMounts:
-        - name: mongodb-data
-          mountPath: /data/db
       volumes:
       - name: mongodb-data
-        persistentVolumeClaim:
-          claimName: mongodb-pvc
+        emptyDir: {}
 ---
 apiVersion: v1
 kind: Service

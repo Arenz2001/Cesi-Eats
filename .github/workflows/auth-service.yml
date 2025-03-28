@@ -94,8 +94,12 @@ jobs:
           if ! kubectl get deployment auth-service &> /dev/null; then
             # Crée le déploiement s'il n'existe pas
             kubectl create deployment auth-service --image=ghcr.io/arenz2001/cesi-eats/auth-service:sha-${{ github.sha }}
-            # Configure le port si nécessaire
-            kubectl expose deployment auth-service --port=3000 --target-port=3000
+            
+            # Vérifie si le service existe avant de le créer
+            if ! kubectl get service auth-service &> /dev/null; then
+              # Configure le port si le service n'existe pas
+              kubectl expose deployment auth-service --port=3000 --target-port=3000
+            fi
           else
             # Met à jour l'image si le déploiement existe
             kubectl set image deployment/auth-service \
@@ -110,5 +114,7 @@ jobs:
           kubectl get deployment auth-service -o yaml
           echo "\nChecking pods..."
           kubectl get pods
+          echo "\nChecking service..."
+          kubectl get service auth-service
           echo "\nDescribing pods..."
           kubectl describe pods -l app=auth-service
