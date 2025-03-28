@@ -19,6 +19,7 @@ spec:
         image: ghcr.io/Arenz2001/cesi-eats/auth-service:latest
         ports:
         - containerPort: 3000
+          name: http
         env:
         - name: MONGODB_URI
           value: "mongodb://localhost:27017/auth"
@@ -29,6 +30,7 @@ spec:
         image: mongo:latest
         ports:
         - containerPort: 27017
+          name: mongodb
         volumeMounts:
         - name: mongodb-storage
           mountPath: /data/db
@@ -44,9 +46,14 @@ spec:
   selector:
     app: auth-service
   ports:
-    - protocol: TCP
+    - name: http
+      protocol: TCP
       port: 80
       targetPort: 3000
+    - name: mongodb
+      protocol: TCP
+      port: 27017
+      targetPort: 27017
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
