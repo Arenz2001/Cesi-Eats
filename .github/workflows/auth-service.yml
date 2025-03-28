@@ -90,8 +90,11 @@ jobs:
         env:
           KUBECONFIG: ${{ github.workspace }}/kubeconfig.yaml
         run: |
+          # First delete existing service to avoid the annotation issue
+          kubectl delete service auth-service --ignore-not-found
+          
           # Update the image in the deployment file
-          sed -i "s|ghcr.io/Arenz2001/cesi-eats/auth-service:latest|ghcr.io/arenz2001/cesi-eats/auth-service:sha-${{ github.sha }}|g" k8s/auth-service/deployment.yaml
+          sed -i "s|ghcr.io/[Aa]renz2001/cesi-eats/auth-service:[^ ]*|ghcr.io/arenz2001/cesi-eats/auth-service:sha-${{ github.sha }}|g" k8s/auth-service/deployment.yaml
           
           # Apply the deployment
           kubectl apply -f k8s/auth-service/deployment.yaml
