@@ -18,7 +18,7 @@ spec:
       - name: auth-service
         image: ghcr.io/Arenz2001/cesi-eats/auth-service:latest
         ports:
-        - containerPort: 3000
+        - containerPort: 3001
           name: http
         env:
         - name: MONGODB_URI
@@ -47,7 +47,7 @@ spec:
     - name: http
       protocol: TCP
       port: 80
-      targetPort: 3000
+      targetPort: 3001
       nodePort: 30000
 ---
 apiVersion: v1
