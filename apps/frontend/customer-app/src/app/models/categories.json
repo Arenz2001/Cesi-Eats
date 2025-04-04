@@ -1,0 +1,26 @@
+[
+    {
+        "name": "Pizza",
+        "image": "/pizza.png"
+    },
+    {
+        "name": "Burgers",
+        "image": "pizza.png"
+    },
+    {
+        "name": "Sushi",
+        "image": "pizza.png"
+    },
+    {
+        "name": "Salades",
+        "image": "pizza.png"
+    },
+    {
+        "name": "Desserts",
+        "image": "pizza.png"
+    },
+    {
+        "name": "Boissons",
+        "image": "pizza.png"
+    }
+]
