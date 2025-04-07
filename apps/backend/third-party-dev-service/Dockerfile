@@ -5,6 +5,9 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 
+# Installer les types manquants
+RUN npm install --save-dev @types/swagger-jsdoc
+
 COPY . .
 RUN npm run build
 
