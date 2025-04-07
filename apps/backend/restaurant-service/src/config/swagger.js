@@ -1,4 +1,5 @@
 const swaggerJsdoc = require('swagger-jsdoc');
+const path = require('path');
 
 const options = {
   definition: {
@@ -11,8 +12,12 @@ const options = {
     servers: [
       {
         url: 'http://localhost:3002',
-        description: 'Development server',
+        description: 'Local development server',
       },
+      {
+        url: 'http://restaurant-service:3002',
+        description: 'Docker development server',
+      }
     ],
     components: {
       securitySchemes: {
@@ -24,7 +29,10 @@ const options = {
       },
     },
   },
-  apis: ['./src/routes/*.js'], // Chemin vers les fichiers de routes
+  apis: [
+    path.join(__dirname, '../routes/*.js'),
+    path.join(__dirname, '../routes/**/*.js')
+  ], // Chemin vers les fichiers de routes
 };
 
 const specs = swaggerJsdoc(options);
