@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  customer-service:
+    build: .
+    ports:
+      - "3003:3003"
+    environment:
+      - PORT=3003
+      - MONGODB_URI=mongodb://mongodb:27017/customer-service
+    depends_on:
+      - mongodb
+    networks:
+      - customer-network
+
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - customer-network
+
+networks:
+  customer-network:
+    driver: bridge
+
+volumes:
+  mongodb_data: 
