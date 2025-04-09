@@ -14,13 +14,5 @@
     {
         "name": "Salades",
         "image": "pizza.png"
-    },
-    {
-        "name": "Desserts",
-        "image": "pizza.png"
-    },
-    {
-        "name": "Boissons",
-        "image": "pizza.png"
     }
 ]

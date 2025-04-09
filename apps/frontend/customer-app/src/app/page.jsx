@@ -1,7 +1,9 @@
 import Image from "next/image";
+import { redirect } from 'next/navigation'
 
 export default function Home() {
 
+  redirect('/accueil')
 
 
   return (
@@ -9,7 +11,6 @@ export default function Home() {
       <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
 
       </main>
-
     </div>
   );
 }
