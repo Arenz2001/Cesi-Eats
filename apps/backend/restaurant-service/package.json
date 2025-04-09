@@ -1,5 +1,5 @@
 {
-  "name": "customer-service",
+  "name": "restaurant-service",
   "version": "1.0.0",
   "main": "src/index.js",
   "scripts": {
@@ -12,13 +12,12 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^5.1.0",
+    "express-validator": "^7.2.1",
     "mongoose": "^8.13.2",
     "swagger-ui-express": "^5.0.0",
     "swagger-jsdoc": "^6.2.8"
-  },
-  "devDependencies": {
-    "nodemon": "^3.1.0"
   }
 }
