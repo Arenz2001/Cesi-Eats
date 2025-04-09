@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  restaurant-service:
+    build: .
+    container_name: restaurant-service
+    ports:
+      - "3002:3002"
+    environment:
+      - PORT=3002
+      - MONGODB_URI=mongodb://mongodb:27017/restaurant-service
+    depends_on:
+      - mongodb
+    networks:
+      - restaurant-network
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - restaurant-network
+
+networks:
+  restaurant-network:
+    driver: bridge
+
+volumes:
+  mongodb_data: 
