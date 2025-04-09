@@ -54,7 +54,7 @@ exports.getRestaurantByName = async (req, res) => {
   }
 };
 
-// Récupérer la carte d'un restaurant
+// Récupérer les plats et menus d'un restaurant
 exports.getMenu = async (req, res) => {
   try {
     const restaurant = await Restaurant.findById(req.params.id);
@@ -63,7 +63,29 @@ exports.getMenu = async (req, res) => {
       return res.status(404).json({ message: 'Restaurant non trouvé' });
     }
     
-    res.json(restaurant.menu);
+    res.json({
+      dishes: restaurant.dishes,
+      menus: restaurant.menus
+    });
+  } catch (err) {
+    console.error(err);
+    if (err.kind === 'ObjectId') {
+      return res.status(400).json({ message: 'ID de restaurant invalide' });
+    }
+    res.status(500).json({ message: 'Erreur serveur' });
+  }
+};
+
+// Récupérer les menus d'un restaurant
+exports.getMenus = async (req, res) => {
+  try {
+    const restaurant = await Restaurant.findById(req.params.id);
+    
+    if (!restaurant) {
+      return res.status(404).json({ message: 'Restaurant non trouvé' });
+    }
+    
+    res.json(restaurant.menus);
   } catch (err) {
     console.error(err);
     if (err.kind === 'ObjectId') {
@@ -97,7 +119,7 @@ exports.createRestaurant = async (req, res) => {
   }
 };
 
-// Ajouter un plat à la carte d'un restaurant
+// Ajouter un plat à un restaurant
 exports.addDish = async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -111,7 +133,7 @@ exports.addDish = async (req, res) => {
       return res.status(404).json({ message: 'Restaurant non trouvé' });
     }
     
-    restaurant.menu.push(req.body);
+    restaurant.dishes.push(req.body);
     await restaurant.save();
     
     res.status(201).json(restaurant);
@@ -124,7 +146,7 @@ exports.addDish = async (req, res) => {
   }
 };
 
-// Mettre à jour un plat existant
+// Mettre à jour un plat
 exports.updateDish = async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -138,7 +160,7 @@ exports.updateDish = async (req, res) => {
       return res.status(404).json({ message: 'Restaurant non trouvé' });
     }
     
-    const dish = restaurant.menu.id(req.params.dishId);
+    const dish = restaurant.dishes.id(req.params.dishId);
     
     if (!dish) {
       return res.status(404).json({ message: 'Plat non trouvé' });
@@ -160,7 +182,7 @@ exports.updateDish = async (req, res) => {
   }
 };
 
-// Supprimer un plat de la carte
+// Supprimer un plat
 exports.removeDish = async (req, res) => {
   try {
     const restaurant = await Restaurant.findById(req.params.restaurantId);
@@ -169,7 +191,7 @@ exports.removeDish = async (req, res) => {
       return res.status(404).json({ message: 'Restaurant non trouvé' });
     }
     
-    const dish = restaurant.menu.id(req.params.dishId);
+    const dish = restaurant.dishes.id(req.params.dishId);
     
     if (!dish) {
       return res.status(404).json({ message: 'Plat non trouvé' });
@@ -261,61 +283,105 @@ exports.searchByCity = async (req, res) => {
   }
 };
 
-// Ajouter une commande à l'historique
-exports.addOrderToHistory = async (req, res) => {
+// Ajouter un menu
+exports.addMenu = async (req, res) => {
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    
     const restaurant = await Restaurant.findById(req.params.id);
     
     if (!restaurant) {
       return res.status(404).json({ message: 'Restaurant non trouvé' });
     }
     
-    restaurant.orderHistory.push(req.body);
+    restaurant.menus.push(req.body);
     await restaurant.save();
     
     res.status(201).json(restaurant);
   } catch (err) {
     console.error(err);
+    if (err.kind === 'ObjectId') {
+      return res.status(400).json({ message: 'ID de restaurant invalide' });
+    }
     res.status(500).json({ message: 'Erreur serveur' });
   }
 };
 
-// Récupérer l'historique des commandes d'un restaurant
-exports.getOrderHistory = async (req, res) => {
+// Mettre à jour un menu
+exports.updateMenu = async (req, res) => {
   try {
-    const restaurant = await Restaurant.findById(req.params.id);
-    
-    if (!restaurant) {
-      return res.status(404).json({ message: 'Restaurant non trouvé' });
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
     }
     
-    res.json(restaurant.orderHistory);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Erreur serveur' });
-  }
-};
-
-// Mettre à jour le statut d'une commande
-exports.updateOrderStatus = async (req, res) => {
-  try {
-    const { status } = req.body;
     const restaurant = await Restaurant.findById(req.params.restaurantId);
     
     if (!restaurant) {
       return res.status(404).json({ message: 'Restaurant non trouvé' });
     }
     
-    const order = restaurant.orderHistory.id(req.params.orderId);
+    const menu = restaurant.menus.id(req.params.menuId);
     
-    if (!order) {
-      return res.status(404).json({ message: 'Commande non trouvée' });
+    if (!menu) {
+      return res.status(404).json({ message: 'Menu non trouvé' });
     }
     
-    order.status = status;
+    Object.keys(req.body).forEach(key => {
+      menu[key] = req.body[key];
+    });
+    
     await restaurant.save();
     
     res.json(restaurant);
+  } catch (err) {
+    console.error(err);
+    if (err.kind === 'ObjectId') {
+      return res.status(400).json({ message: 'ID invalide' });
+    }
+    res.status(500).json({ message: 'Erreur serveur' });
+  }
+};
+
+// Supprimer un menu
+exports.removeMenu = async (req, res) => {
+  try {
+    const restaurant = await Restaurant.findById(req.params.restaurantId);
+    
+    if (!restaurant) {
+      return res.status(404).json({ message: 'Restaurant non trouvé' });
+    }
+    
+    const menu = restaurant.menus.id(req.params.menuId);
+    
+    if (!menu) {
+      return res.status(404).json({ message: 'Menu non trouvé' });
+    }
+    
+    menu.remove();
+    await restaurant.save();
+    
+    res.json(restaurant);
+  } catch (err) {
+    console.error(err);
+    if (err.kind === 'ObjectId') {
+      return res.status(400).json({ message: 'ID invalide' });
+    }
+    res.status(500).json({ message: 'Erreur serveur' });
+  }
+};
+
+// Récupérer les restaurants par catégorie
+exports.getRestaurantsByCategory = async (req, res) => {
+  try {
+    const restaurants = await Restaurant.find({
+      'dishes.category': req.params.category
+    });
+    
+    res.json(restaurants);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Erreur serveur' });

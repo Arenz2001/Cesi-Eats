@@ -22,58 +22,27 @@ const dishSchema = new mongoose.Schema({
   }
 });
 
-// Define the order item schema (pour les plats commandés)
-const orderItemSchema = new mongoose.Schema({
-  dishId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Dish'
-  },
+// Define the menu schema (anciennement orderItemSchema)
+const MenuSchema = new mongoose.Schema({
+  dishes: [{
+    dishId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Dish',
+      required: true
+    },
+    quantity: {
+      type: Number,
+      required: true,
+      min: 1,
+      default: 1
+    }
+  }],
   name: {
     type: String,
     required: true
   },
   price: {
     type: Number,
-    required: true
-  },
-  quantity: {
-    type: Number,
-    required: true,
-    min: 1,
-    default: 1
-  }
-});
-
-// Define the order history item schema
-const orderHistoryItemSchema = new mongoose.Schema({
-  orderId: {
-    type: String,
-    required: true
-  },
-  userId: {
-    type: String,
-    required: true
-  },
-  orderDate: {
-    type: Date,
-    default: Date.now
-  },
-  status: {
-    type: String,
-    enum: ['pending', 'preparing', 'ready', 'delivered', 'cancelled'],
-    default: 'pending'
-  },
-  totalAmount: {
-    type: Number,
-    required: true
-  },
-  items: [orderItemSchema],
-  deliveryAddress: {
-    type: String,
-    required: true
-  },
-  paymentMethod: {
-    type: String,
     required: true
   }
 });
@@ -108,8 +77,8 @@ const restaurantSchema = new mongoose.Schema({
       default: 'France'
     }
   },
-  menu: [dishSchema],
-  orderHistory: [orderHistoryItemSchema],
+  dishes: [dishSchema],    // Collection de tous les plats
+  menus: [MenuSchema],     // Collection de tous les menus
   createdAt: {
     type: Date,
     default: Date.now
