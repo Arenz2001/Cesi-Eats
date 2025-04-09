@@ -13,13 +13,13 @@ export default function RootLayout({ children }) {
     <html lang="fr">
       <body className="min-h-screen flex flex-col bg-background">
         <Header />
-        <div className="flex flex-1 pt-16">
+        <div className="flex flex-1 pt-14 md:pt-16">
           <Sidebar />
-          <main className="flex-1 ml-64 p-6 overflow-y-auto">
+          <main className="flex-1 md:ml-64 p-4 md:p-6 overflow-y-auto">
             {children}
           </main>
         </div>
-        <Footer className="ml-64" />
+        <Footer className="md:ml-64" />
       </body>
     </html>
   );

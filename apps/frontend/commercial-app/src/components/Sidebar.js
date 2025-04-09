@@ -11,7 +11,7 @@ const Sidebar = () => {
   };
 
   return (
-    <div className="fixed top-0 left-0 w-64 h-screen bg-side-bg border-r border-border-color pt-20 pb-4 px-4 flex flex-col overflow-y-auto z-0">
+    <div className="hidden md:flex fixed top-0 left-0 w-64 h-screen bg-side-bg border-r border-border-color pt-20 pb-4 px-4 flex-col overflow-y-auto z-10">
       <h2 className="text-lg font-bold mb-6 text-text-primary border-b border-border-color pb-2">Navigation</h2>
       <nav className="flex-1 space-y-2">
         <Link 
