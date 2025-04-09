@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: third-party-dev-app
+  labels:
+    app: third-party-dev-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: third-party-dev-app
+  template:
+    metadata:
+      labels:
+        app: third-party-dev-app
+    spec:
+      containers:
+        - name: third-party-dev-app
+          image: ghcr.io/Arenz2001/cesi-eats/third-party-dev-app:latest
+          ports:
+            - containerPort: 30011
+              name: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: third-party-dev-app
+spec:
+  type: NodePort
+  selector:
+    app: third-party-dev-app
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 30011
+      nodePort: 30011
