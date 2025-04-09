@@ -18,14 +18,6 @@ const userSchema = new mongoose.Schema({
     enum: ['client', 'restaurant', 'delivery', 'admin'],
     default: 'client'
   },
-  firstName: {
-    type: String,
-    required: true
-  },
-  lastName: {
-    type: String,
-    required: true
-  },
   createdAt: {
     type: Date,
     default: Date.now

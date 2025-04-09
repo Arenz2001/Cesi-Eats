@@ -9,8 +9,6 @@ const router = express.Router();
 const registerValidation = [
   body('email').isEmail().normalizeEmail(),
   body('password').isLength({ min: 6 }),
-  body('firstName').notEmpty(),
-  body('lastName').notEmpty(),
   body('role').isIn(['client', 'restaurant', 'delivery', 'admin'])
 ];
 
