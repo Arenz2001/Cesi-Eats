@@ -3,7 +3,6 @@
 import Image from 'next/image'
 import categoriesList from '../models/categories'
 import Categories from '@/components/Categories'
-import { useEffect, useState } from 'react'
 
 export default function HomePage() {
 

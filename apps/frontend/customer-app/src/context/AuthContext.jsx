@@ -12,7 +12,7 @@ export const AuthProvider = ({ children }) => {
 
     const login = async (username, password) => {
         try {
-            const response = await fetch('https://fakestoreapi.com/auth/login', {
+            const response = await fetch('http://auth-cesieats.arenz-proxmox.fr/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

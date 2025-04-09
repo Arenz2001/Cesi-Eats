@@ -3,9 +3,9 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { usePathname } from "next/navigation";
-import { CartProvider } from "@/context/CartContext"
 import { AuthProvider } from "@/context/AuthContext";
-
+import { CartProvider } from "@/context/CartContext"
+import AuthGuard from "@/components/AuthGuard";
 export default function RootLayout({ children }) {
 
   const pathname = usePathname();
@@ -20,9 +20,13 @@ export default function RootLayout({ children }) {
       >
         <AuthProvider>
           <CartProvider>
-            {!hideNavbarRoutes.includes(pathname) && <Navbar />}
-            {children}
-            {!hideNavbarRoutes.includes(pathname) && <Footer />}
+            <AuthGuard>
+
+              {!hideNavbarRoutes.includes(pathname) && <Navbar />}
+              {children}
+              {!hideNavbarRoutes.includes(pathname) && <Footer />}
+            </AuthGuard>
+
           </CartProvider>
         </AuthProvider>
       </body>
