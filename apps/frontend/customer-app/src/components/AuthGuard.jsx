@@ -7,23 +7,41 @@ import { useAuth } from '@/context/AuthContext'
 export default function AuthGuard({ children }) {
     const router = useRouter()
     const pathname = usePathname()
-    const { user, loading } = useAuth()
+    const { user, loading, accessToken } = useAuth()
 
     const publicRoutes = ['/login', '/register', '/forgot-password']
+    const isPublicRoute = publicRoutes.includes(pathname)
 
     useEffect(() => {
-        if (!loading && !user && !publicRoutes.includes(pathname)) {
-            router.push('/login')
+        if (!loading) {
+            // Si on est sur une route publique et qu'on est déjà connecté, on redirige vers l'accueil
+            if (isPublicRoute && accessToken) {
+                router.push('/accueil')
+                return
+            }
+
+            // Si on est sur une route privée et qu'on n'est pas connecté, on redirige vers login
+            if (!isPublicRoute && !accessToken) {
+                router.push('/login')
+                return
+            }
         }
-    }, [user, loading, pathname])
+    }, [accessToken, loading, pathname, isPublicRoute])
 
-    if (loading) return <div className="p-8 text-center text-gray-500">Chargement...</div>
+    // Afficher un loader pendant la vérification
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
+            </div>
+        )
+    }
 
-    // Si route publique OU user connecté, on laisse passer
-    if (publicRoutes.includes(pathname) || user) {
+    // Si on est sur une route publique OU si on est authentifié, on affiche le contenu
+    if (isPublicRoute || accessToken) {
         return children
     }
 
-    // Sinon, on n'affiche rien le temps de redirection
+    // Dans tous les autres cas, on n'affiche rien pendant la redirection
     return null
 }

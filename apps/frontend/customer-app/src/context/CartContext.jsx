@@ -1,5 +1,6 @@
 "use client"
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { useAuth } from "./AuthContext";
 
 const CartContext = createContext()
 
@@ -12,6 +13,24 @@ export const CartProvider = ({ children }) => {
         }
         return []; // Retourner un tableau vide si nous ne sommes pas dans le navigateur
     });
+
+    const { registerLogoutCallback } = useAuth();
+
+    const clearCart = useCallback(() => {
+        setCart([]);
+        if (typeof window !== "undefined") {
+            localStorage.removeItem('cart');
+        }
+    }, []);
+
+    useEffect(() => {
+        // S'enregistrer pour le callback de déconnexion
+        const unregister = registerLogoutCallback(clearCart);
+        return () => {
+            // Nettoyer le callback lors du démontage du composant
+            unregister();
+        };
+    }, [registerLogoutCallback, clearCart]);
 
     useEffect(() => {
         // Sauvegarder le panier dans localStorage chaque fois qu'il change
@@ -54,7 +73,7 @@ export const CartProvider = ({ children }) => {
     }
 
     return (
-        <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity }}>
+        <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart }}>
             {children}
         </CartContext.Provider>
     )

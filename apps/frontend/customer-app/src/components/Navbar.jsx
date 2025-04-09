@@ -5,11 +5,15 @@ import { Search } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { FaShoppingCart, FaUserCircle } from 'react-icons/fa'
-
+import { useAuth } from '@/context/AuthContext'
 export default function Navbar() {
+    const { logout, error } = useAuth();
+
     const [open, setOpen] = useState(false)
     const isLoggedIn = true // 🔐 Simule l'état de connexion (tu peux le connecter plus tard à ton auth)
-
+    const handleSubmitLogout = async (e) => {
+        await logout();
+    };
     return (
         <nav className="flex items-center justify-between bg-gray-100 shadow-md p-4 border-b border-gray-300 relative z-50">
             {/* Logo + Liens */}
@@ -58,8 +62,7 @@ export default function Navbar() {
                                 <button
                                     onClick={() => {
                                         // future logout logic
-                                        console.log('Déconnexion')
-                                        setOpen(false)
+                                        handleSubmitLogout()
                                     }}
                                     className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-100"
                                 >

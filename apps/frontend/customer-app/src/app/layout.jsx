@@ -6,30 +6,25 @@ import { usePathname } from "next/navigation";
 import { AuthProvider } from "@/context/AuthContext";
 import { CartProvider } from "@/context/CartContext"
 import AuthGuard from "@/components/AuthGuard";
+
 export default function RootLayout({ children }) {
-
   const pathname = usePathname();
-  const hideNavbarRoutes = ['/login', '/register', '/forgot-password'];
-
+  const publicRoutes = ['/login', '/register', '/forgot-password'];
 
   if (!pathname) return null;
   return (
     <html lang="en">
-      <body
-        className={` antialiased`}
-      >
+      <body className="antialiased">
         <AuthProvider>
           <CartProvider>
             <AuthGuard>
-
-              {!hideNavbarRoutes.includes(pathname) && <Navbar />}
+              {!publicRoutes.includes(pathname) && <Navbar />}
               {children}
-              {!hideNavbarRoutes.includes(pathname) && <Footer />}
+              {!publicRoutes.includes(pathname) && <Footer />}
             </AuthGuard>
-
           </CartProvider>
         </AuthProvider>
       </body>
-    </html >
+    </html>
   );
 }
