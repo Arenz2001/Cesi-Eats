@@ -13,6 +13,8 @@ export default function Register() {
     confirmPassword: '',
     firstName: '',
     lastName: '',
+    company: '',
+    position: '',
     agreeTerms: false
   });
   const [errors, setErrors] = useState({});
@@ -67,6 +69,16 @@ export default function Register() {
       newErrors.lastName = 'Veuillez saisir votre nom';
     }
     
+    // Validation de l'entreprise
+    if (!formData.company) {
+      newErrors.company = 'Veuillez saisir le nom de votre entreprise';
+    }
+    
+    // Validation du poste
+    if (!formData.position) {
+      newErrors.position = 'Veuillez saisir votre poste';
+    }
+    
     // Validation des conditions d'utilisation
     if (!formData.agreeTerms) {
       newErrors.agreeTerms = 'Vous devez accepter les conditions d\'utilisation';
@@ -106,6 +118,31 @@ export default function Register() {
       const data = await response.json();
       
       if (response.ok) {
+        // Inscription réussie dans l'authentification
+        // Maintenant, créer le profil développeur
+        try {
+          const developerResponse = await fetch('http://localhost:3004/api/developers', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              userId: data.user.id,
+              company: formData.company,
+              position: formData.position
+            }),
+          });
+
+          if (!developerResponse.ok) {
+            console.error('Erreur lors de la création du profil développeur');
+          } else {
+            const developerData = await developerResponse.json();
+            console.log('Profil développeur créé avec succès:', developerData);
+          }
+        } catch (error) {
+          console.error('Erreur lors de la création du profil développeur:', error);
+        }
+        
         // Inscription réussie
         setRegisterSuccess(true);
         
@@ -186,6 +223,38 @@ export default function Register() {
               />
               {errors.lastName && (
                 <p className="text-red-500 text-sm mt-1">{errors.lastName}</p>
+              )}
+            </div>
+            
+            <div>
+              <input
+                type="text"
+                name="company"
+                placeholder="Entreprise*"
+                value={formData.company}
+                onChange={handleChange}
+                className={`w-full px-4 py-3 rounded-md bg-gray-100 border ${
+                  errors.company ? 'border-red-500' : 'border-gray-200'
+                } focus:outline-none focus:ring-2 focus:ring-orange-500 text-black`}
+              />
+              {errors.company && (
+                <p className="text-red-500 text-sm mt-1">{errors.company}</p>
+              )}
+            </div>
+            
+            <div>
+              <input
+                type="text"
+                name="position"
+                placeholder="Poste*"
+                value={formData.position}
+                onChange={handleChange}
+                className={`w-full px-4 py-3 rounded-md bg-gray-100 border ${
+                  errors.position ? 'border-red-500' : 'border-gray-200'
+                } focus:outline-none focus:ring-2 focus:ring-orange-500 text-black`}
+              />
+              {errors.position && (
+                <p className="text-red-500 text-sm mt-1">{errors.position}</p>
               )}
             </div>
             
