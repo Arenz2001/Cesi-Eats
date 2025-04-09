@@ -1,15 +1,14 @@
-# .github/workflows/auth-service.yml
-name: Auth Service CI/CD
+name: Third Party Dev App CI/CD
 
 on:
   push:
     paths:
-      - "apps/backend/auth-service/**"
-      - ".github/workflows/auth-service.yml"
+      - "apps/frontend/third-party-dev-app/**"
+      - ".github/workflows/third-party-dev-app.yml"
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: arenz2001/cesi-eats/auth-service
+  IMAGE_NAME: arenz2001/cesi-eats/third-party-dev-app
 
 jobs:
   build-and-deploy:
@@ -50,7 +49,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
         with:
-          context: ./apps/backend/auth-service
+          context: ./apps/frontend/third-party-dev-app
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -69,20 +68,11 @@ jobs:
 
       - name: Configure kubectl
         run: |
-          # Décode le kubeconfig
           echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > kubeconfig.yaml
-
-          # Donne les bons droits au fichier
           chmod 600 kubeconfig.yaml
-
-          # Configure kubectl explicitement
           export KUBECONFIG="$PWD/kubeconfig.yaml"
-
-          # Vérifie la configuration
           echo "=== Kubectl config ==="
           kubectl config view --raw
-
-          # Test la connexion
           echo "=== Testing connection ==="
           kubectl cluster-info
 
@@ -90,27 +80,20 @@ jobs:
         env:
           KUBECONFIG: ${{ github.workspace }}/kubeconfig.yaml
         run: |
-          # First delete existing service to avoid the annotation issue
-          kubectl delete service auth-service --ignore-not-found
-
-          # Update the image in the deployment file
-          sed -i "s|ghcr.io/[Aa]renz2001/cesi-eats/auth-service:[^ ]*|ghcr.io/arenz2001/cesi-eats/auth-service:sha-${{ github.sha }}|g" k8s/auth-service/deployment.yaml
-
-          # Apply the deployment
-          kubectl apply -f k8s/auth-service/deployment.yaml
-
-          # Wait for rollout to complete
-          kubectl rollout status deployment/auth-service
+          kubectl delete service third-party-dev-app --ignore-not-found
+          sed -i "s|ghcr.io/[Aa]renz2001/cesi-eats/third-party-dev-app:[^ ]*|ghcr.io/arenz2001/cesi-eats/third-party-dev-app:sha-${{ github.sha }}|g" k8s/third-party-dev-app/deployment.yaml
+          kubectl apply -f k8s/third-party-dev-app/deployment.yaml
+          kubectl rollout status deployment/third-party-dev-app
 
       - name: Debug deployment
         env:
           KUBECONFIG: ${{ github.workspace }}/kubeconfig.yaml
         run: |
           echo "Checking deployment status..."
-          kubectl get deployment auth-service -o yaml
+          kubectl get deployment third-party-dev-app -o yaml
           echo "\nChecking pods..."
           kubectl get pods
           echo "\nChecking service..."
-          kubectl get service auth-service
+          kubectl get service third-party-dev-app
           echo "\nDescribing pods..."
-          kubectl describe pods -l app=auth-service
+          kubectl describe pods -l app=third-party-dev-app
