@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: api-gateway
-          image: ghcr.io/arenz-proxmox/cesieats/api-gateway:latest
+          image: ghcr.io/Arenz2001/cesieats/api-gateway:latest
           ports:
             - containerPort: 80
           resources:

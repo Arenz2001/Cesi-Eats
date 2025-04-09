@@ -11,7 +11,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: arenz-proxmox/cesieats/api-gateway
+  IMAGE_NAME: arenz2001/cesieats/api-gateway
 
 jobs:
   build-and-deploy:
