@@ -9,7 +9,7 @@ const router = express.Router();
 const registerValidation = [
   body('email').isEmail().normalizeEmail(),
   body('password').isLength({ min: 6 }),
-  body('role').isIn(['client', 'restaurant', 'delivery', 'admin'])
+  body('role').isIn(['customer', 'developper', 'restaurant', 'delivery', 'commercial'])
 ];
 
 //login 
