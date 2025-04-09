@@ -23,4 +23,10 @@ router.post('/register', registerValidation, authController.register);
 router.post('/login', loginValidation, authController.login);
 router.get('/me', authMiddleware, authController.getCurrentUser);
 
-module.exports = router; 
+// Verification endpoint for auth_request in nginx
+router.get('/verify', authMiddleware, (req, res) => {
+  // If authMiddleware passes, user is authenticated
+  res.status(200).send();
+});
+
+module.exports = router;
