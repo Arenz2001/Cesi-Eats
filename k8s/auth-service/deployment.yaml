@@ -18,7 +18,7 @@ spec:
         - name: auth-service
           image: ghcr.io/Arenz2001/cesi-eats/auth-service:latest
           ports:
-            - containerPort: 3001
+            - containerPort: 3000
               name: http
           env:
             - name: MONGODB_URI
@@ -37,7 +37,7 @@ spec:
                   name: auth-service-secrets
                   key: JWT_EXPIRES_IN
             - name: PORT
-              value: "3001"
+              value: "3000"
         - name: mongodb
           image: mongo:latest
           ports:
@@ -62,7 +62,7 @@ spec:
     - name: http
       protocol: TCP
       port: 80
-      targetPort: 3001
+      targetPort: 3000
       nodePort: 30000
 ---
 apiVersion: v1
