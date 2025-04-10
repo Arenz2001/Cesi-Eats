@@ -6,6 +6,7 @@ on:
       - main
       - feature/api-gateway
     paths:
+      - "apps/api-gateway/**"
       - "k8s/api-gateway/**"
       - ".github/workflows/api-gateway.yml"
 

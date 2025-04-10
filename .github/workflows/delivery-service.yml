@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - "apps/backend/delivery-service/**"
+      - "k8s/delivery-service/**"
       - ".github/workflows/delivery-service.yml"
 
 env:

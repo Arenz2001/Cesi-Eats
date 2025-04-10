@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - "apps/backend/restaurant-service/**"
+      - "k8s/restaurant-service/**"
       - ".github/workflows/restaurant-service.yml"
 
 env:
