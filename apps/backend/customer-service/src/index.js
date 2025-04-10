@@ -29,7 +29,7 @@ app.use(express.urlencoded({ extended: true })); // Pour parser les données de 
 app.use(express.static(path.join(__dirname, 'public'))); // Pour servir des fichiers statiques
 
 // Routes API
-app.use('/api/users', apiRoutes);
+app.use('/', apiRoutes);
 
 // Swagger documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));

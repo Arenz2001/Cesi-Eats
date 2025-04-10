@@ -1,6 +1,5 @@
 "use client"
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { loginUser } from "@/utils/api";
 import { useRouter } from "next/navigation";
 
 const AuthContext = createContext();
@@ -14,38 +13,42 @@ export const AuthProvider = ({ children }) => {
     const [logoutCallbacks, setLogoutCallbacks] = useState([]);
 
     useEffect(() => {
-        // Récupérer le token stocké au chargement
         const storedToken = localStorage.getItem('accessToken');
         if (storedToken) {
             setAccessToken(storedToken);
-            // TODO: Ajouter une validation du token ici
-            // fetchUserProfile(storedToken);
+            fetchUserProfile(storedToken);
         }
         setLoading(false);
     }, []);
 
-    // const fetchUserProfile = async (token) => {
-    //     try {
-    //         const response = await fetch('https://auth-cesieats.arenz-proxmox.fr/api/users/me', {
-    //             headers: {
-    //                 'Authorization': `Bearer ${token}`
-    //             }
-    //         });
-    //         if (response.ok) {
-    //             const userData = await response.json();
-    //             setUser(userData);
-    //         } else {
-    //             throw new Error('Erreur lors de la récupération du profil');
-    //         }
-    //     } catch (err) {
-    //         console.error('Erreur profil:', err);
-    //         logout();
-    //     }
-    // };
+    const fetchUserProfile = async (token) => {
+        try {
+            console.log('Fetching user profile from:', `${process.env.NEXT_PUBLIC_CUSTOMER_API_URL}/me`);
+            const response = await fetch(`${process.env.NEXT_PUBLIC_CUSTOMER_API_URL}/me`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            console.log('Profile response status:', response.status);
+            if (response.ok) {
+                const userData = await response.json();
+                console.log('User profile data:', userData);
+                setUser(userData);
+            } else {
+                const errorData = await response.json().catch(() => ({}));
+                console.error('Profile error response:', errorData);
+                throw new Error(errorData.message || 'Erreur lors de la récupération du profil');
+            }
+        } catch (err) {
+            console.error('Erreur profil:', err);
+            logout();
+        }
+    };
 
     const registerLogoutCallback = useCallback((callback) => {
         setLogoutCallbacks(prev => [...prev, callback]);
-        // Retourner une fonction de nettoyage pour désenregistrer le callback
         return () => {
             setLogoutCallbacks(prev => prev.filter(cb => cb !== callback));
         };
@@ -56,15 +59,16 @@ export const AuthProvider = ({ children }) => {
         setAccessToken(null);
         setUser(null);
         setError(null);
-        // Exécuter tous les callbacks de déconnexion
         logoutCallbacks.forEach(callback => callback());
         router.push('/login');
     }, [logoutCallbacks, router]);
 
     const login = async (email, password) => {
         setLoading(true);
+        setError(null);
         try {
-            const response = await fetch('https://auth-cesieats.arenz-proxmox.fr/api/auth/login', {
+            console.log('Login attempt to:', `${process.env.NEXT_PUBLIC_AUTH_API_URL}/login`);
+            const response = await fetch(`${process.env.NEXT_PUBLIC_AUTH_API_URL}/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -72,20 +76,24 @@ export const AuthProvider = ({ children }) => {
                 body: JSON.stringify({
                     email,
                     password,
-                }),
+                })
             });
 
+            console.log('Login response status:', response.status);
             if (!response.ok) {
-                throw new Error('Identifiants invalides');
+                const errorData = await response.json().catch(() => ({}));
+                console.error('Login error response:', errorData);
+                throw new Error(errorData.message || 'Identifiants invalides');
             }
 
             const data = await response.json();
+            console.log('Login success data:', data);
             localStorage.setItem('accessToken', data.token);
             setAccessToken(data.token);
             await fetchUserProfile(data.token);
-            setError(null);
             router.push('/profil');
         } catch (err) {
+            console.error('Login error:', err);
             setError(err.message);
         } finally {
             setLoading(false);

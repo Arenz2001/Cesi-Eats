@@ -53,7 +53,7 @@ app.get('/health', (req, res) => {
 });
 
 // Restaurant routes
-app.use('/api/restaurants', restaurantRoutes);
+app.use('/', restaurantRoutes);
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI, {
