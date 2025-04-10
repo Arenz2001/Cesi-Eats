@@ -24,7 +24,7 @@ exports.getAllUsers = async (req, res) => {
 // Récupérer un utilisateur par son ID d'authentification
 exports.getUserById = async (req, res) => {
   try {
-    const user = await User.findOne({ Id_auth: req.params.id });
+    const user = await User.findOne({ id: req.params.id });
     if (!user) {
       return res.status(404).json({ message: 'Utilisateur non trouvé' });
     }
