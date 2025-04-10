@@ -71,7 +71,7 @@ router.post('/', developerValidation, createDeveloper);
  */
 router.get('/:userId', getDeveloper);
 
-router.get('/', getAllDeveloper);
+router.get('/', getAllDevelopers);
 
 /**
  * @swagger
