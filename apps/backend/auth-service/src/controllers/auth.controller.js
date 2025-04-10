@@ -10,7 +10,7 @@ exports.register = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { email, password, firstName, lastName, role } = req.body;
+    const { email, password, role } = req.body;
 
     // Check if user exists
     let user = await User.findOne({ email });
@@ -22,8 +22,6 @@ exports.register = async (req, res) => {
     user = new User({
       email,
       password,
-      firstName,
-      lastName,
       role
     });
 
@@ -41,8 +39,6 @@ exports.register = async (req, res) => {
       user: {
         id: user._id,
         email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
         role: user.role
       }
     });
@@ -86,8 +82,6 @@ exports.login = async (req, res) => {
       user: {
         id: user._id,
         email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
         role: user.role
       }
     });
