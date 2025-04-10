@@ -52,6 +52,19 @@ spec:
       nodePort: 30002
 ---
 apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mongodb-pv-order
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /data/mongodb-order
+  persistentVolumeReclaimPolicy: Retain
+---
+apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: mongodb-pvc-order

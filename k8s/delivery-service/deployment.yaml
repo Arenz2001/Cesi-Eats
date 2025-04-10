@@ -52,6 +52,19 @@ spec:
       nodePort: 30003
 ---
 apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mongodb-pv-delivery
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /data/mongodb-delivery
+  persistentVolumeReclaimPolicy: Retain
+---
+apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: mongodb-pvc-delivery
