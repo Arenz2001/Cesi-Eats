@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
+import { Toaster } from "react-hot-toast";
 
 export default function Login() {
     const router = useRouter();
@@ -84,6 +85,7 @@ export default function Login() {
 
     return (
         <div className="flex min-h-screen">
+            <Toaster position="top-center" />
             {/* Left section - Form */}
             <div className="w-full md:w-1/2 flex flex-col justify-center px-8 md:px-16 lg:px-24">
                 <div className="max-w-md mx-auto">

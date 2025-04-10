@@ -5,6 +5,9 @@ const deliveryController = require('../controllers/delivery.controller');
 // Route pour créer un livreur
 router.post('/delivery', deliveryController.createDelivery);
 
+// Route alternative pour créer un livreur (pour compatibilité avec l'application)
+router.post('/deliverymen', deliveryController.createDelivery);
+
 // Route pour récupérer un livreur par ID
 router.get('/delivery/:id', deliveryController.getDeliveryById);
 

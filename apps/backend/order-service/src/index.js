@@ -26,8 +26,16 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/cesi-eats
 .then(() => console.log('Connecté à MongoDB'))
 .catch(err => console.error('Erreur de connexion à MongoDB:', err));
 
-// Routes
 app.use('/', orderRoutes);
+
+// Route racine
+app.get('/', (req, res) => {
+    res.json({
+        message: 'Service de commandes opérationnel',
+        documentation: `/api-docs`,
+        version: '1.0.0'
+    });
+});
 
 // Gestion des erreurs
 app.use((err, req, res, next) => {

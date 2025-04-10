@@ -49,6 +49,7 @@ const orderSchema = new mongoose.Schema({
             'validated_by_client',
             'accepted_by_restaurant',
             'in_preparation',
+            'ready_for_delivery',
             'accepted_by_delivery',
             'on_the_way',
             'delivered',

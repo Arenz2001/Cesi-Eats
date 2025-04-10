@@ -45,11 +45,11 @@ export default function CreateDishPage() {
                 price: parseFloat(form.price),
                 description: form.description,
                 category: form.category,
-                // L'image est optionnelle
-                ...(form.image && { image: form.image })
+                // L'image est optionnelle, et on utilise imageUrl comme nom de champ pour correspondre au modèle
+                ...(form.image && { imageUrl: form.image })
             }
             
-            const response = await fetch(`https://api-cesieats.arenz-proxmox.fr/restaurants/${user.id}/dishes`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_RESTAURANT_API_URL}/${user.id_restaurant}/dishes`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -128,6 +128,11 @@ export default function CreateDishPage() {
                             className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
                         >
                             <option value="">Sélectionnez une catégorie</option>
+                            <option value="Sushi">Sushi</option>
+                            <option value="Pizza">Pizza</option>
+                            <option value="Burger">Burger</option>
+                            <option value="Pâtes">Pâtes</option>
+                            <option value="Salade">Salade</option>
                             <option value="Entrée">Entrée</option>
                             <option value="Plat principal">Plat principal</option>
                             <option value="Dessert">Dessert</option>
@@ -175,7 +180,14 @@ export default function CreateDishPage() {
                     </div>
 
                     {/* Bouton */}
-                    <div className="pt-4 flex justify-end">
+                    <div className="pt-4 flex justify-end gap-3">
+                        <button
+                            type="button"
+                            onClick={() => router.push('/articles')}
+                            className="px-6 py-2 rounded-full bg-gray-200 hover:bg-gray-300 text-gray-700 transition"
+                        >
+                            Annuler
+                        </button>
                         <button
                             type="submit"
                             disabled={isSubmitting}

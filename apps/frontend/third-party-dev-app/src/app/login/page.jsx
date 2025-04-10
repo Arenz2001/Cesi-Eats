@@ -8,71 +8,26 @@ import { useAuth } from "@/contexts/AuthContext";
 
 export default function Login() {
     const router = useRouter();
-    const { login } = useAuth();
-    const [formData, setFormData] = useState({
-        email: '',
-        password: '',
-        rememberMe: false
-    });
-    const [errors, setErrors] = useState({});
+    const { login, error: authError } = useAuth();
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [rememberMe, setRememberMe] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [loginError, setLoginError] = useState('');
-
-    const handleChange = (e) => {
-        const { name, value, type, checked } = e.target;
-        setFormData(prevData => ({
-            ...prevData,
-            [name]: type === 'checkbox' ? checked : value
-        }));
-        
-        // Effacer les erreurs lors de la saisie
-        if (errors[name]) {
-            setErrors(prev => ({ ...prev, [name]: '' }));
-        }
-    };
-
-    const validateForm = () => {
-        const newErrors = {};
-        
-        // Validation de l'email
-        if (!formData.email) {
-            newErrors.email = 'Veuillez saisir votre email';
-        } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-            newErrors.email = 'Format d\'email invalide';
-        }
-        
-        // Validation du mot de passe
-        if (!formData.password) {
-            newErrors.password = 'Veuillez saisir votre mot de passe';
-        }
-        
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoginError('');
-        
-        if (!validateForm()) {
-            return;
-        }
-        
         setIsLoading(true);
         
         try {
-            // Utiliser la fonction de connexion du contexte d'authentification
-            const result = await login(
-                formData.email,
-                formData.password,
-                formData.rememberMe
-            );
+            const result = await login(email, password, rememberMe);
             
             if (result.success) {
                 // Redirection vers la page d'accueil après connexion
                 router.push('/');
             } else {
-                setLoginError(result.error);
+                setLoginError(result.error || 'Erreur de connexion');
             }
         } catch (error) {
             setLoginError('Erreur de connexion au serveur. Veuillez réessayer.');
@@ -99,9 +54,9 @@ export default function Login() {
                     </div>
 
                     {/* Login error message */}
-                    {loginError && (
+                    {(loginError || authError) && (
                         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-                            {loginError}
+                            {loginError || authError}
                         </div>
                     )}
 
@@ -110,33 +65,23 @@ export default function Login() {
                         <div>
                             <input
                                 type="email"
-                                name="email"
                                 placeholder="Email"
-                                value={formData.email}
-                                onChange={handleChange}
-                                className={`w-full px-4 py-3 rounded-md bg-gray-100 border ${
-                                    errors.email ? 'border-red-500' : 'border-gray-200'
-                                } focus:outline-none focus:ring-2 focus:ring-orange-500 text-black`}
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                required
+                                className="w-full px-4 py-3 rounded-md bg-gray-100 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-black"
                             />
-                            {errors.email && (
-                                <p className="text-red-500 text-sm mt-1">{errors.email}</p>
-                            )}
                         </div>
 
                         <div>
                             <input
                                 type="password"
-                                name="password"
                                 placeholder="Mot de passe"
-                                value={formData.password}
-                                onChange={handleChange}
-                                className={`w-full px-4 py-3 rounded-md bg-gray-100 border ${
-                                    errors.password ? 'border-red-500' : 'border-gray-200'
-                                } focus:outline-none focus:ring-2 focus:ring-orange-500 text-black`}
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                                className="w-full px-4 py-3 rounded-md bg-gray-100 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-black"
                             />
-                            {errors.password && (
-                                <p className="text-red-500 text-sm mt-1">{errors.password}</p>
-                            )}
                         </div>
 
                         <div className="flex justify-between">
@@ -144,9 +89,8 @@ export default function Login() {
                                 <input 
                                     type="checkbox" 
                                     id="rememberMe" 
-                                    name="rememberMe"
-                                    checked={formData.rememberMe}
-                                    onChange={handleChange}
+                                    checked={rememberMe}
+                                    onChange={(e) => setRememberMe(e.target.checked)}
                                     className="mr-2" 
                                 />
                                 <label htmlFor="rememberMe" className="text-sm text-black">
@@ -192,6 +136,7 @@ export default function Login() {
                         alt="Plat de nourriture"
                         fill
                         priority
+                        sizes="(max-width: 768px) 100vw, 50vw"
                         style={{ objectFit: 'cover' }}
                     />
                 </div>

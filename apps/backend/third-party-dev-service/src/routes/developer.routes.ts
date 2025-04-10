@@ -7,8 +7,8 @@ const router = express.Router();
 
 // Validation middleware
 const developerValidation = [
-  body('company').notEmpty().withMessage('Company name is required'),
-  body('position').notEmpty().withMessage('Position is required'),
+  body('company').optional().isString().withMessage('Company name should be a string'),
+  body('position').optional().isString().withMessage('Position should be a string'),
   validateRequest
 ];
 
@@ -99,6 +99,9 @@ router.get('/', getAllDevelopers);
  *               position:
  *                 type: string
  *                 description: Nouveau poste
+ *               apiKey:
+ *                 type: string
+ *                 description: Nouvelle clé API ou null pour la révoquer
  *     responses:
  *       200:
  *         description: Profil mis à jour avec succès

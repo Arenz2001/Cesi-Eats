@@ -6,43 +6,39 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./config/swagger');
 require('dotenv').config();
 const cors = require('cors');
-const app = express();
 
-const corsOptions = {
-  origin: ['http://localhost:3000', 'https://api-cesieats.arenz-proxmox.fr'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
-};
-app.use(cors(corsOptions));
 // Initialisation de l'application Express
-const PORT = process.env.PORT || 3003;
+const app = express();
+const PORT = process.env.PORT || 3001;
 
-// Configuration de la connexion MongoDB avec Mongoose
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('MongoDB connection error:', err));
+// Configuration CORS simplifiée
+app.use(cors());
 
 // Middleware par défaut
 app.use(express.json()); // Pour parser les requêtes JSON
 app.use(express.urlencoded({ extended: true })); // Pour parser les données de formulaire
 app.use(express.static(path.join(__dirname, 'public'))); // Pour servir des fichiers statiques
 
-// Routes API
-app.use('/', apiRoutes);
+// Configuration de la connexion MongoDB avec Mongoose
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => console.log('Connected to MongoDB'))
+  .catch(err => console.error('MongoDB connection error:', err));
 
-// Swagger documentation
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+// Route par défaut
+app.get('/', (req, res) => {
+  res.send('Bienvenue sur le serveur Express du service client');
+});
 
 // Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'customer-service' });
 });
 
-// Route par défaut
-app.get('/', (req, res) => {
-  res.send('Bienvenue sur le serveur Express');
-});
+// Routes API (après la route par défaut)
+app.use('/api/users', apiRoutes);
+
+// Swagger documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Gestion des erreurs 404
 app.use((req, res, next) => {

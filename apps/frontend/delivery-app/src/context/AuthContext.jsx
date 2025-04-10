@@ -49,8 +49,11 @@ export const AuthProvider = ({ children }) => {
     const login = async (email, password) => {
         setLoading(true);
         setError(null);
+        
+        console.log('Tentative de connexion avec email:', email);
+        console.log('URL du service Auth:', process.env.NEXT_PUBLIC_AUTH_API_URL);
+        
         try {
-            console.log('Login attempt to:', `${process.env.NEXT_PUBLIC_AUTH_API_URL}/login`);
             const response = await fetch(`${process.env.NEXT_PUBLIC_AUTH_API_URL}/login`, {
                 method: 'POST',
                 headers: {
@@ -59,18 +62,35 @@ export const AuthProvider = ({ children }) => {
                 body: JSON.stringify({
                     email,
                     password,
+                    role: 'delivery' // Rôle en minuscules, comme dans le register
                 })
             });
 
-            console.log('Login response status:', response.status);
+            console.log('Réponse du service auth:', {
+                status: response.status,
+                statusText: response.statusText
+            });
+
             if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                console.error('Login error response:', errorData);
+                const errorData = await response.json().catch(e => {
+                    console.error('Erreur lors du parsing de la réponse d\'erreur:', e);
+                    return { message: 'Erreur inconnue du serveur d\'authentification' };
+                });
+                console.error('Détails de l\'erreur auth:', errorData);
                 throw new Error(errorData.message || 'Identifiants invalides');
             }
 
             const data = await response.json();
-            console.log('Login success data:', data);
+            console.log('Données auth reçues:', {
+                tokenReçu: !!data.token,
+                userId: data.user?.id,
+                userRole: data.user?.role
+            });
+            
+            // Vérifier que l'utilisateur est bien un livreur
+            if (data.user?.role !== 'delivery') {
+                throw new Error('Accès non autorisé. Compte livreur requis.');
+            }
             
             // Stocker le token et les données utilisateur
             localStorage.setItem('accessToken', data.token);
@@ -79,10 +99,10 @@ export const AuthProvider = ({ children }) => {
             setAccessToken(data.token);
             setUser(data.user);
             
-            router.push('/profil');
+            router.push('/commandes-disponibles');
         } catch (err) {
             console.error('Login error:', err);
-            setError(err.message);
+            setError(err.message || "Une erreur s'est produite lors de la connexion");
         } finally {
             setLoading(false);
         }
@@ -159,34 +179,6 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const deleteAccount = async () => {
-        setLoading(true);
-        setError(null);
-        try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_AUTH_API_URL}/user`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${accessToken}`
-                }
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.message || 'Erreur lors de la suppression du compte');
-            }
-
-            // Nettoyer les données et rediriger
-            logout();
-            return true;
-        } catch (err) {
-            console.error('Delete account error:', err);
-            setError(err.message);
-            return false;
-        } finally {
-            setLoading(false);
-        }
-    };
-
     const isAuthenticated = () => {
         return !!accessToken;
     };
@@ -201,7 +193,6 @@ export const AuthProvider = ({ children }) => {
             logout,
             updateEmail,
             updatePassword,
-            deleteAccount,
             isAuthenticated,
             registerLogoutCallback
         }}>
@@ -210,5 +201,4 @@ export const AuthProvider = ({ children }) => {
     );
 };
 
-export const useAuth = () => useContext(AuthContext);
-
+export const useAuth = () => useContext(AuthContext); 

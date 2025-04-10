@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const mongoose = require('mongoose');
 const apiRoutes = require('./routes/delivery.routes');
+const cors = require('cors');
 require('dotenv').config();
 
 // Initialisation de l'application Express
@@ -14,16 +15,17 @@ mongoose.connect(process.env.MONGODB_URI)
   .catch(err => console.error('Erreur de connexion à MongoDB:', err));
 
 // Middleware par défaut
+app.use(cors()); // Activation du CORS pour toutes les routes
 app.use(express.json()); // Pour parser les requêtes JSON
 app.use(express.urlencoded({ extended: true })); // Pour parser les données de formulaire
 app.use(express.static(path.join(__dirname, 'public'))); // Pour servir des fichiers statiques
 
-// Routes API
-app.use('/', apiRoutes);
+// Routes API avec préfixe /api
+app.use('/api', apiRoutes);
 
 // Route par défaut
 app.get('/', (req, res) => {
-  res.send('Bienvenue sur le serveur Express');
+  res.send('Bienvenue sur le serveur Express du service de livraison');
 });
 
 // Gestion des erreurs 404
