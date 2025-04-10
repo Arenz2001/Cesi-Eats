@@ -22,7 +22,7 @@ spec:
               name: http
           env:
             - name: MONGODB_URI
-              value: "mongodb://localhost:27017/third-party-dev"
+              value: "mongodb://localhost:27017/third-party-dev-service"
         - name: mongodb
           image: mongo:latest
           ports:
