@@ -72,6 +72,13 @@ const dishValidation = [
   body('price').isNumeric().withMessage('Le prix doit être un nombre')
 ];
 
+// Validations pour les menus
+const menuValidation = [
+  body('name').notEmpty().withMessage('Le nom du menu est requis'),
+  body('price').isNumeric().withMessage('Le prix doit être un nombre'),
+  body('dishes').isArray().withMessage('Les plats doivent être dans un tableau')
+];
+
 // Routes des restaurants
 /**
  * @swagger
@@ -352,5 +359,14 @@ router.put('/:restaurantId/dishes/:dishId', dishValidation, restaurantController
  *         description: Restaurant ou plat non trouvé
  */
 router.delete('/:restaurantId/dishes/:dishId', restaurantController.removeDish);
+
+// Routes pour les menus
+router.get('/:id/menus', restaurantController.getMenus);
+router.post('/:id/menus', menuValidation, restaurantController.addMenu);
+router.put('/:restaurantId/menus/:menuId', menuValidation, restaurantController.updateMenu);
+router.delete('/:restaurantId/menus/:menuId', restaurantController.removeMenu);
+
+// Route pour filtrer par catégorie
+router.get('/category/:category', restaurantController.getRestaurantsByCategory);
 
 module.exports = router;
