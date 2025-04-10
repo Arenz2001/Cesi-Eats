@@ -52,6 +52,19 @@ spec:
       nodePort: 30012
 ---
 apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mongodb-pv-third-party-dev
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /data/mongodb-third-party-dev
+  persistentVolumeReclaimPolicy: Retain
+---
+apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: mongodb-pvc-third-party-dev

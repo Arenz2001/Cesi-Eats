@@ -52,6 +52,19 @@ spec:
       nodePort: 30001
 ---
 apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mongodb-pv-restaurant
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /data/mongodb-restaurant
+  persistentVolumeReclaimPolicy: Retain
+---
+apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: mongodb-pvc-restaurant
