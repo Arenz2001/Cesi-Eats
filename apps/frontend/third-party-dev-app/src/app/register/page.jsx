@@ -101,7 +101,7 @@ export default function Register() {
     
     try {
       // Appel à l'API d'inscription
-      const response = await fetch('https://auth-cesieats.arenz-proxmox.fr/api/auth/register', {
+      const response = await fetch('https://api-cesieats.arenz-proxmox.fr/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -121,7 +121,7 @@ export default function Register() {
         // Inscription réussie dans l'authentification
         // Maintenant, créer le profil développeur
         try {
-          const developerResponse = await fetch('http://localhost:3004/api/developers', {
+          const developerResponse = await fetch('https://api-cesieats.arenz-proxmox.fr/dev/api/developers', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

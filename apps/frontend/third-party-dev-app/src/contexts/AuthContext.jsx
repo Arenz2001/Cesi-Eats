@@ -174,6 +174,7 @@ export function AuthProvider({ children }) {
     login,
     logout,
     isAuthenticated: !!user,
+    getAuthToken
   };
 
   return (
