@@ -9,12 +9,19 @@ const cors = require('cors');
 const app = express();
 
 const corsOptions = {
-  origin: ['http://localhost:3000', 'https://api-cesieats.arenz-proxmox.fr'],
+  origin: ['http://localhost:3000', 'https://customer.cesieats.fr'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
+  exposedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 };
 app.use(cors(corsOptions));
+
+// Enable pre-flight requests for all routes
+app.options('*', cors(corsOptions));
+
 // Initialisation de l'application Express
 const PORT = process.env.PORT || 3003;
 
