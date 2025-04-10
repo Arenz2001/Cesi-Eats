@@ -1,56 +1,86 @@
-import { Search } from "lucide-react";
-import Image from 'next/image';
-import React from 'react';
-import { FaShoppingCart, FaUserCircle, FaSearch } from 'react-icons/fa';
-import Link from "next/link";
+'use client'
+
+import { useState } from 'react'
+import { Search } from 'lucide-react'
+import Image from 'next/image'
+import Link from 'next/link'
+import { FaShoppingCart, FaUserCircle } from 'react-icons/fa'
+import { useAuth } from '@/context/AuthContext'
 export default function Navbar() {
+    const { logout, error } = useAuth();
+
+    const [open, setOpen] = useState(false)
+    const isLoggedIn = true // 🔐 Simule l'état de connexion (tu peux le connecter plus tard à ton auth)
+    const handleSubmitLogout = async (e) => {
+        await logout();
+    };
     return (
-        <>
-            <nav className="flex items-center justify-between bg-gray-100 shadow-md p-4 border-b border-gray-300">
-                {/* Logo */}
-                <div className="flex items-center ">
-                    <Link href="/accueil">
-                        <Image width={40}
-                            height={40}
-                            src="/logo.svg"
-                            alt="CES'EATS"
-                            className="h-8 mr-2" />
+        <nav className="flex items-center justify-between bg-gray-100 shadow-md p-4 border-b border-gray-300 relative z-50">
+            {/* Logo + Liens */}
+            <div className="flex items-center">
+                <Link href="/accueil">
+                    <Image width={40} height={40} src="/logo.svg" alt="CES'EATS" className="h-8 mr-2" />
+                </Link>
+                <Link href="/accueil">
+                    <span className="text-xl font-bold">CES'EATS</span>
+                </Link>
+                <div className="flex space-x-4 ml-24">
+                    <Link href="/accueil" className="text-gray-700 hover:text-orange-500">
+                        ACCUEIL
                     </Link>
-                    <Link href="/accueil">
-                        <span className="text-xl font-bold">CES'EATS</span>
+                    <Link href="/restaurants" className="text-gray-700 hover:text-orange-500">
+                        RESTAURANTS
                     </Link>
-                    <div className="flex space-x-4 ml-24">
-                        <a href="/accueil" className="text-gray-700 hover:text-orange-500">ACCUEIL</a>
-                        <a href="/restaurants" className="text-gray-700 hover:text-orange-500">RESTAURANTS</a>
-                        <a href="/search-dishes" className="text-gray-700 hover:text-orange-500">PLATS</a>
-
-                    </div>
+                    <Link href="/search-dishes" className="text-gray-700 hover:text-orange-500">
+                        PLATS
+                    </Link>
                 </div>
+            </div>
 
+            {/* Icônes */}
+            <div className="flex items-center space-x-6 mr-6 relative">
+                <Link href="/panier">
+                    <FaShoppingCart className="text-gray-700 hover:text-orange-500 h-6 w-6" />
+                </Link>
 
-
-                {/* Search Bar */}
-                <div className="relative w-1/2 flex gap-2  m-auto ">
-                    <input
-                        type="text"
-                        placeholder="Rechercher des plats"
-                        className="w-full p-3 rounded-lg  shadow-sm pl-10 focus:outline-none focus:ring-2 focus:ring-orange-500"
-                    />
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
-                </div>
-
-                {/* Icons */}
-                <div className="flex items-center space-x-4 mr-6">
-                    <Link href="/panier">
-                        <FaShoppingCart className="text-gray-700 hover:text-orange-500 h-6 w-6 mr-8" />
-                    </Link>
-                    <Link href="/profil">
+                {/* Profil avec dropdown */}
+                <div className="relative">
+                    <button onClick={() => setOpen(!open)} className="focus:outline-none">
                         <FaUserCircle className="text-gray-700 hover:text-orange-500 h-6 w-6" />
-                    </Link>
+                    </button>
+
+                    {open && (
+                        <div className="absolute right-0 mt-2 w-44 bg-white rounded-xl shadow-lg py-2 z-50">
+                            <Link
+                                href="/profil"
+                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                onClick={() => setOpen(false)}
+                            >
+                                Mon profil
+                            </Link>
+                            {isLoggedIn ? (
+                                <button
+                                    onClick={() => {
+                                        // future logout logic
+                                        handleSubmitLogout()
+                                    }}
+                                    className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-100"
+                                >
+                                    Déconnexion
+                                </button>
+                            ) : (
+                                <Link
+                                    href="/connexion"
+                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                    onClick={() => setOpen(false)}
+                                >
+                                    Connexion
+                                </Link>
+                            )}
+                        </div>
+                    )}
                 </div>
-
-            </nav>
-
-        </>
-    );
+            </div>
+        </nav>
+    )
 }

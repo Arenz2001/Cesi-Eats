@@ -1,7 +1,19 @@
+"use client"
 import Image from "next/image";
 import Link from "next/link";
+import { useAuth } from "@/context/AuthContext";
+import { useState } from "react";
 
 export default function Home() {
+    const { login, error } = useAuth();
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        await login(email, password);
+    };
+
     return (
         <div className="flex min-h-screen">
             {/* Left section - Form */}
@@ -19,13 +31,15 @@ export default function Home() {
                     </div>
 
                     {/* Registration form */}
-                    <form className="space-y-4">
+                    <form className="space-y-4" onSubmit={handleSubmit}>
                         <div>
                             <input
                                 type="email"
                                 placeholder="Email"
                                 className="w-full px-4 py-3 rounded-md bg-gray-100 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-black"
                                 required
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
                             />
                         </div>
 
@@ -35,8 +49,13 @@ export default function Home() {
                                 placeholder="Mot de passe"
                                 className="w-full px-4 py-3 rounded-md bg-gray-100 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-black"
                                 required
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
                             />
                         </div>
+
+                        {error && <p className="text-red-500">{error}</p>}
+
                         <div className="flex justify-between">
 
                             <div className="flex items-center mt-2">
