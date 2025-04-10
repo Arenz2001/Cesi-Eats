@@ -79,13 +79,6 @@ const menuValidation = [
   body('dishes').isArray().withMessage('Les plats doivent être dans un tableau')
 ];
 
-// Validations pour les menus
-const menuValidation = [
-  body('name').notEmpty().withMessage('Le nom du menu est requis'),
-  body('price').isNumeric().withMessage('Le prix doit être un nombre'),
-  body('dishes').isArray().withMessage('Les plats doivent être dans un tableau')
-];
-
 // Routes des restaurants
 /**
  * @swagger
