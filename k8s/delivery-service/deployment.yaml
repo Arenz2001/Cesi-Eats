@@ -18,11 +18,13 @@ spec:
         - name: delivery-service
           image: ghcr.io/Arenz2001/cesi-eats/delivery-service:latest
           ports:
-            - containerPort: 30003
+            - containerPort: 3005
               name: http
           env:
             - name: MONGODB_URI
               value: "mongodb://localhost:27017/delivery-service"
+            - name: PORT
+              value: "3005"
         - name: mongodb
           image: mongo:latest
           ports:
@@ -48,7 +50,7 @@ spec:
     - name: http
       protocol: TCP
       port: 80
-      targetPort: 30003
+      targetPort: 3005
       nodePort: 30003
 ---
 apiVersion: v1

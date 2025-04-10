@@ -18,11 +18,13 @@ spec:
         - name: order-service
           image: ghcr.io/Arenz2001/cesi-eats/order-service:latest
           ports:
-            - containerPort: 30002
+            - containerPort: 3004
               name: http
           env:
             - name: MONGODB_URI
               value: "mongodb://localhost:27017/order-service"
+            - name: PORT
+              value: "3004"
         - name: mongodb
           image: mongo:latest
           ports:
@@ -48,7 +50,7 @@ spec:
     - name: http
       protocol: TCP
       port: 80
-      targetPort: 30002
+      targetPort: 3004
       nodePort: 30002
 ---
 apiVersion: v1
