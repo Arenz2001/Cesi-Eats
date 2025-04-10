@@ -5,7 +5,15 @@ const apiRoutes = require('./routes/user.routes');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./config/swagger');
 require('dotenv').config();
+const cors = require('cors');
 
+const corsOptions = {
+  origin: ['http://localhost:3000', 'https://customer.cesieats.fr'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+};
+app.use(cors(corsOptions));
 // Initialisation de l'application Express
 const app = express();
 const PORT = process.env.PORT || 3003;
