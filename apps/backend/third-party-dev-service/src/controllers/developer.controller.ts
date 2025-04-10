@@ -42,6 +42,21 @@ export const getDeveloper = async (req: Request, res: Response) => {
   }
 };
 
+export const getAllDevelopers = async (req: Request, res: Response) => {
+  try {
+    const developers = await Developer.find({});
+    
+    if (!developers || developers.length === 0) {
+      return res.status(404).json({ message: 'No developers found' });
+    }
+    
+    res.json(developers);
+  } catch (error) {
+    console.error('Error fetching all developers:', error);
+    res.status(500).json({ message: 'Error fetching developers' });
+  }
+};
+
 // Update developer profile
 export const updateDeveloper = async (req: Request, res: Response) => {
   try {
