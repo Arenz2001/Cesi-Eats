@@ -35,7 +35,8 @@ spec:
               mountPath: /data/db
       volumes:
         - name: mongodb-data
-          emptyDir: {}
+          persistentVolumeClaim:
+            claimName: mongodb-pvc-customer
 ---
 apiVersion: v1
 kind: Service

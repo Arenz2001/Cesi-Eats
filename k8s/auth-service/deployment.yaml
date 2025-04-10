@@ -15,25 +15,26 @@ spec:
         app: auth-service
     spec:
       containers:
-      - name: auth-service
-        image: ghcr.io/Arenz2001/cesi-eats/auth-service:latest
-        ports:
-        - containerPort: 3001
-          name: http
-        env:
-        - name: MONGODB_URI
-          value: "mongodb://localhost:27017/auth"
-      - name: mongodb
-        image: mongo:latest
-        ports:
-        - containerPort: 27017
-          name: mongodb
-        volumeMounts:
-        - name: mongodb-data
-          mountPath: /data/db
+        - name: auth-service
+          image: ghcr.io/Arenz2001/cesi-eats/auth-service:latest
+          ports:
+            - containerPort: 3001
+              name: http
+          env:
+            - name: MONGODB_URI
+              value: "mongodb://localhost:27017/auth"
+        - name: mongodb
+          image: mongo:latest
+          ports:
+            - containerPort: 27017
+              name: mongodb
+          volumeMounts:
+            - name: mongodb-data
+              mountPath: /data/db
       volumes:
-      - name: mongodb-data
-        emptyDir: {}
+        - name: mongodb-data
+          persistentVolumeClaim:
+            claimName: mongodb-pvc
 ---
 apiVersion: v1
 kind: Service
@@ -59,4 +60,4 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 1Gi 
+      storage: 1Gi
