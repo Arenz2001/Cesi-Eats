@@ -71,6 +71,8 @@ router.post('/', developerValidation, createDeveloper);
  */
 router.get('/:userId', getDeveloper);
 
+router.get('/', getAllDeveloper);
+
 /**
  * @swagger
  * /api/developers/{userId}:

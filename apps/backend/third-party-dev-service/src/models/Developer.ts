@@ -13,7 +13,7 @@ const developerSchema = new mongoose.Schema<IDeveloper>({
   userId: { type: String, required: true, unique: true },
   company: { type: String, required: true },
   position: { type: String, required: true },
-  apiKey: { type: String, required: true, unique: true },
+  apiKey: { type: String, required: false, unique: true },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });
