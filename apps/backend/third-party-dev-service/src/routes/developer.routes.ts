@@ -1,6 +1,6 @@
 import express from 'express';
 import { body } from 'express-validator';
-import { createDeveloper, getDeveloper, updateDeveloper, deleteDeveloper } from '../controllers/developer.controller';
+import { createDeveloper, getDeveloper, getAllDevelopers, updateDeveloper, deleteDeveloper } from '../controllers/developer.controller';
 import { validateRequest } from '../middleware/validate-request';
 
 const router = express.Router();
