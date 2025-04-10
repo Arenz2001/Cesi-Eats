@@ -9,7 +9,7 @@ const cors = require('cors');
 const app = express();
 
 const corsOptions = {
-  origin: ['http://localhost:3000', 'https://customer.cesieats.fr'],
+  origin: ['http://localhost:3000', 'https://api-cesieats.arenz-proxmox.fr'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
