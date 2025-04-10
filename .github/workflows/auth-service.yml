@@ -5,6 +5,7 @@ on:
   push:
     paths:
       - "apps/backend/auth-service/**"
+      - "k8s/auth-service/**"
       - ".github/workflows/auth-service.yml"
 
 env:

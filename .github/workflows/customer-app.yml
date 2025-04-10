@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - "apps/frontend/customer-app/**"
+      - "k8s/customer-app/**"
       - ".github/workflows/customer-app.yml"
 
 env:

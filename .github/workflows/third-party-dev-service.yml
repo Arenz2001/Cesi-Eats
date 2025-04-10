@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - "apps/backend/third-party-dev-service/**"
+      - "k8s/third-party-dev-service/**"
       - ".github/workflows/third-party-dev-service.yml"
 
 env:

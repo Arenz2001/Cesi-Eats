@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - "apps/backend/order-service/**"
+      - "k8s/order-service/**"
       - ".github/workflows/order-service.yml"
 
 env:
