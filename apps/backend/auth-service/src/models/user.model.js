@@ -15,16 +15,8 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['client', 'restaurant', 'delivery', 'admin'],
-    default: 'client'
-  },
-  firstName: {
-    type: String,
-    required: true
-  },
-  lastName: {
-    type: String,
-    required: true
+    enum: ['customer', 'developper', 'restaurant', 'delivery', 'commercial'],
+    default: 'customer'
   },
   createdAt: {
     type: Date,

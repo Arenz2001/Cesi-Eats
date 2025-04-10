@@ -9,9 +9,7 @@ const router = express.Router();
 const registerValidation = [
   body('email').isEmail().normalizeEmail(),
   body('password').isLength({ min: 6 }),
-  body('firstName').notEmpty(),
-  body('lastName').notEmpty(),
-  body('role').isIn(['client', 'restaurant', 'delivery', 'admin'])
+  body('role').isIn(['customer', 'developper', 'restaurant', 'delivery', 'commercial'])
 ];
 
 //login 
@@ -25,4 +23,10 @@ router.post('/register', registerValidation, authController.register);
 router.post('/login', loginValidation, authController.login);
 router.get('/me', authMiddleware, authController.getCurrentUser);
 
-module.exports = router; 
+// Verification endpoint for auth_request in nginx
+router.get('/verify', authMiddleware, (req, res) => {
+  // If authMiddleware passes, user is authenticated
+  res.status(200).send();
+});
+
+module.exports = router;
