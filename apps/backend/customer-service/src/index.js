@@ -6,6 +6,7 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./config/swagger');
 require('dotenv').config();
 const cors = require('cors');
+const app = express();
 
 const corsOptions = {
   origin: ['http://localhost:3000', 'https://customer.cesieats.fr'],
@@ -15,7 +16,6 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 // Initialisation de l'application Express
-const app = express();
 const PORT = process.env.PORT || 3003;
 
 // Configuration de la connexion MongoDB avec Mongoose
