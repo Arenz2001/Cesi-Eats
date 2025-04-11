@@ -94,15 +94,15 @@ spec:
               name: cust-app-http
           env:
             - name: NEXT_PUBLIC_AUTH_API_URL
-              value: "http://localhost:3004/"
+              value: "http://localhost:3004"
             - name: NEXT_PUBLIC_CUSTOMER_API_URL
-              value: "http://localhost:3001/"
+              value: "http://localhost:3001"
             - name: NEXT_PUBLIC_RESTAURANT_API_URL
-              value: "http://localhost:3002/"
+              value: "http://localhost:3002"
             - name: NEXT_PUBLIC_ORDER_API_URL
-              value: "http://localhost:3003/"
+              value: "http://localhost:3003"
             - name: NEXT_PUBLIC_DELIVERY_API_URL
-              value: "http://localhost:3005/"
+              value: "http://localhost:3005"
             - name: NEXT_PUBLIC_THIRD_PARTY_API_URL
               value: "http://localhost:3006"
 
@@ -113,15 +113,15 @@ spec:
               name: deliv-app-http
           env:
             - name: NEXT_PUBLIC_AUTH_API_URL
-              value: "http://localhost:3004/"
+              value: "http://localhost:3004"
             - name: NEXT_PUBLIC_CUSTOMER_API_URL
-              value: "http://localhost:3001/"
+              value: "http://localhost:3001"
             - name: NEXT_PUBLIC_RESTAURANT_API_URL
-              value: "http://localhost:3002/"
+              value: "http://localhost:3002"
             - name: NEXT_PUBLIC_ORDER_API_URL
-              value: "http://localhost:3003/"
+              value: "http://localhost:3003"
             - name: NEXT_PUBLIC_DELIVERY_API_URL
-              value: "http://localhost:3005/"
+              value: "http://localhost:3005"
             - name: NEXT_PUBLIC_THIRD_PARTY_API_URL
               value: "http://localhost:3006"
 
@@ -132,15 +132,15 @@ spec:
               name: comm-app-http
           env:
             - name: NEXT_PUBLIC_AUTH_API_URL
-              value: "http://localhost:3004/"
+              value: "http://localhost:3004"
             - name: NEXT_PUBLIC_CUSTOMER_API_URL
-              value: "http://localhost:3001/"
+              value: "http://localhost:3001"
             - name: NEXT_PUBLIC_RESTAURANT_API_URL
-              value: "http://localhost:3002/"
+              value: "http://localhost:3002"
             - name: NEXT_PUBLIC_ORDER_API_URL
-              value: "http://localhost:3003/"
+              value: "http://localhost:3003"
             - name: NEXT_PUBLIC_DELIVERY_API_URL
-              value: "http://localhost:3005/"
+              value: "http://localhost:3005"
             - name: NEXT_PUBLIC_THIRD_PARTY_API_URL
               value: "http://localhost:3006"
 
@@ -151,15 +151,15 @@ spec:
               name: rest-app-http
           env:
             - name: NEXT_PUBLIC_AUTH_API_URL
-              value: "http://localhost:3004/"
+              value: "http://localhost:3004"
             - name: NEXT_PUBLIC_CUSTOMER_API_URL
-              value: "http://localhost:3001/"
+              value: "http://localhost:3001"
             - name: NEXT_PUBLIC_RESTAURANT_API_URL
-              value: "http://localhost:3002/"
+              value: "http://localhost:3002"
             - name: NEXT_PUBLIC_ORDER_API_URL
-              value: "http://localhost:3003/"
+              value: "http://localhost:3003"
             - name: NEXT_PUBLIC_DELIVERY_API_URL
-              value: "http://localhost:3005/"
+              value: "http://localhost:3005"
             - name: NEXT_PUBLIC_THIRD_PARTY_API_URL
               value: "http://localhost:3006"
 
@@ -170,15 +170,15 @@ spec:
               name: tpd-app-http
           env:
             - name: NEXT_PUBLIC_AUTH_API_URL
-              value: "http://localhost:3004/"
+              value: "http://localhost:3004"
             - name: NEXT_PUBLIC_CUSTOMER_API_URL
-              value: "http://localhost:3001/"
+              value: "http://localhost:3001"
             - name: NEXT_PUBLIC_RESTAURANT_API_URL
-              value: "http://localhost:3002/"
+              value: "http://localhost:3002"
             - name: NEXT_PUBLIC_ORDER_API_URL
-              value: "http://localhost:3003/"
+              value: "http://localhost:3003"
             - name: NEXT_PUBLIC_DELIVERY_API_URL
-              value: "http://localhost:3005/"
+              value: "http://localhost:3005"
             - name: NEXT_PUBLIC_THIRD_PARTY_API_URL
               value: "http://localhost:3006"
 
