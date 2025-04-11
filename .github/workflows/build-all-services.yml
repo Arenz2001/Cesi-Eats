@@ -4,8 +4,8 @@ on:
   push:
     branches: [main]
     paths:
-      - "frontend/**"
-      - "backend/**"
+      - "apps/frontend/**"
+      - "apps/backend/**"
       - "k8s/combined-deployment.yaml"
   workflow_dispatch:
 
@@ -58,7 +58,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: ./frontend/${{ matrix.app }}
+          context: ./apps/frontend/${{ matrix.app }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -110,7 +110,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: ./backend/${{ matrix.service }}
+          context: ./apps/backend/${{ matrix.service }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
