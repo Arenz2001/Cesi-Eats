@@ -32,9 +32,37 @@ const UserSchema = new Schema({
       required: false
     }
   },
-  SIRET:{
+  SIRET: {
+    type: String,
+    required: false
+  },
+  VehicleType: {
+    type: String,
+    required: true,
+    enum: ['car', 'motorcycle', 'bicycle', 'scooter']
+  },
+  VehicleLicense: {
     type: String,
     required: true
+  },
+  DeliveryZones: {
+    type: String,
+    required: false
+  },
+  Status: {
+    type: String,
+    enum: ['available', 'busy', 'offline'],
+    default: 'available'
+  },
+  Rating: {
+    type: Number,
+    min: 0,
+    max: 5,
+    default: 0
+  },
+  CreatedAt: {
+    type: Date,
+    default: Date.now
   }
 });
 

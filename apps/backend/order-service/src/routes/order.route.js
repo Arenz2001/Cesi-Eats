@@ -39,13 +39,55 @@ const orderController = require('../controllers/order.controller');
  *           description: Prix total de la commande
  *         status:
  *           type: string
- *           enum: [pending, accepted, preparing, ready, delivering, delivered, cancelled]
+ *           enum: [pending, accepted, preparing, ready, ready_for_delivery, delivering, delivered, cancelled]
  *           default: pending
  */
 
 /**
  * @swagger
- * /api/orders:
+ * /orders/available:
+ *   get:
+ *     summary: Récupérer les commandes disponibles pour livraison
+ *     tags: [Orders]
+ *     responses:
+ *       200:
+ *         description: Liste des commandes disponibles pour livraison
+ */
+router.get('/orders/available', orderController.getAvailableOrders);
+
+/**
+ * @swagger
+ * /orders/{id}/accept:
+ *   post:
+ *     summary: Accepter une commande par un livreur
+ *     tags: [Orders]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID de la commande
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               deliveryPersonId:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Commande acceptée avec succès
+ *       404:
+ *         description: Commande non trouvée
+ */
+router.post('/orders/:id/accept', orderController.acceptOrder);
+
+/**
+ * @swagger
+ * /orders:
  *   post:
  *     summary: Créer une nouvelle commande
  *     tags: [Orders]
@@ -59,11 +101,11 @@ const orderController = require('../controllers/order.controller');
  *       201:
  *         description: Commande créée avec succès
  */
-router.post('/', orderController.createOrder);
+router.post('/orders', orderController.createOrder);
 
 /**
  * @swagger
- * /api/orders:
+ * /orders:
  *   get:
  *     summary: Récupérer toutes les commandes
  *     tags: [Orders]
@@ -77,11 +119,11 @@ router.post('/', orderController.createOrder);
  *               items:
  *                 $ref: '#/components/schemas/Order'
  */
-router.get('/', orderController.getAllOrders);
+router.get('/orders', orderController.getAllOrders);
 
 /**
  * @swagger
- * /api/orders/{id}:
+ * /orders/{id}:
  *   get:
  *     summary: Récupérer une commande par son ID
  *     tags: [Orders]
@@ -98,11 +140,11 @@ router.get('/', orderController.getAllOrders);
  *       404:
  *         description: Commande non trouvée
  */
-router.get('/:id', orderController.getOrderById);
+router.get('/orders/:id', orderController.getOrderById);
 
 /**
  * @swagger
- * /api/orders/{id}:
+ * /orders/{id}:
  *   put:
  *     summary: Mettre à jour une commande
  *     tags: [Orders]
@@ -125,11 +167,11 @@ router.get('/:id', orderController.getOrderById);
  *       404:
  *         description: Commande non trouvée
  */
-router.put('/:id', orderController.updateOrder);
+router.put('/orders/:id', orderController.updateOrder);
 
 /**
  * @swagger
- * /api/orders/{id}:
+ * /orders/{id}:
  *   delete:
  *     summary: Supprimer une commande
  *     tags: [Orders]
@@ -146,11 +188,11 @@ router.put('/:id', orderController.updateOrder);
  *       404:
  *         description: Commande non trouvée
  */
-router.delete('/:id', orderController.deleteOrder);
+router.delete('/orders/:id', orderController.deleteOrder);
 
 /**
  * @swagger
- * /api/orders/{id}/status:
+ * /orders/{id}/status:
  *   patch:
  *     summary: Mettre à jour le statut d'une commande
  *     tags: [Orders]
@@ -170,16 +212,16 @@ router.delete('/:id', orderController.deleteOrder);
  *             properties:
  *               status:
  *                 type: string
- *                 enum: [pending, accepted, preparing, ready, delivering, delivered, cancelled]
+ *                 enum: [pending, accepted, preparing, ready, ready_for_delivery, delivering, delivered, cancelled]
  *     responses:
  *       200:
  *         description: Statut de la commande mis à jour avec succès
  */
-router.patch('/:id/status', orderController.updateOrderStatus);
+router.patch('/orders/:id/status', orderController.updateOrderStatus);
 
 /**
  * @swagger
- * /api/orders/client/{clientId}:
+ * /orders/client/{clientId}:
  *   get:
  *     summary: Récupérer les commandes d'un client
  *     tags: [Orders]
@@ -194,11 +236,11 @@ router.patch('/:id/status', orderController.updateOrderStatus);
  *       200:
  *         description: Liste des commandes du client
  */
-router.get('/client/:clientId', orderController.getClientOrders);
+router.get('/orders/client/:clientId', orderController.getClientOrders);
 
 /**
  * @swagger
- * /api/orders/restaurant/{restaurantId}:
+ * /orders/restaurant/{restaurantId}:
  *   get:
  *     summary: Récupérer les commandes d'un restaurant
  *     tags: [Orders]
@@ -213,11 +255,11 @@ router.get('/client/:clientId', orderController.getClientOrders);
  *       200:
  *         description: Liste des commandes du restaurant
  */
-router.get('/restaurant/:restaurantId', orderController.getRestaurantOrders);
+router.get('/orders/restaurant/:restaurantId', orderController.getRestaurantOrders);
 
 /**
  * @swagger
- * /api/orders/delivery/{deliveryPersonId}:
+ * /orders/delivery/{deliveryPersonId}:
  *   get:
  *     summary: Récupérer les commandes d'un livreur
  *     tags: [Orders]
@@ -232,6 +274,6 @@ router.get('/restaurant/:restaurantId', orderController.getRestaurantOrders);
  *       200:
  *         description: Liste des commandes du livreur
  */
-router.get('/delivery/:deliveryPersonId', orderController.getDeliveryPersonOrders);
+router.get('/orders/delivery/:deliveryPersonId', orderController.getDeliveryPersonOrders);
 
 module.exports = router;

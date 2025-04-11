@@ -28,7 +28,14 @@ export default function ApiKeyManagement() {
     
     try {
       const token = getAuthToken();
-      const response = await fetch(`https://api-cesieats.arenz-proxmox.fr/dev/api/developers/${user.id}`, {
+      if (!process.env.NEXT_PUBLIC_THIRD_PARTY_API_URL) {
+        throw new Error("L'URL de l'API des développeurs n'est pas configurée (NEXT_PUBLIC_THIRD_PARTY_API_URL)");
+      }
+      
+      const apiUrl = `${process.env.NEXT_PUBLIC_THIRD_PARTY_API_URL}/api/developers/${user.id}`;
+      console.log('Récupération du profil développeur depuis:', apiUrl);
+      
+      const response = await fetch(apiUrl, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -36,22 +43,37 @@ export default function ApiKeyManagement() {
         },
       });
       
-      const data = await response.json();
-      
       if (!response.ok) {
-        throw new Error(data.message || 'Erreur lors de la récupération du profil développeur');
+        // Vérifier le type de contenu de la réponse
+        const contentType = response.headers.get('content-type');
+        
+        if (contentType && contentType.includes('application/json')) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || `Erreur ${response.status}: Impossible de récupérer le profil développeur`);
+        } else {
+          const errorText = await response.text();
+          throw new Error(`Erreur ${response.status}: ${errorText || 'Impossible de récupérer le profil développeur'}`);
+        }
       }
       
-      setDeveloperProfile(data);
-      if (data.apiKey) {
-        setActiveKey({
-          key: data.apiKey,
-          createdAt: new Date(data.updatedAt || data.createdAt),
-          isActive: true
-        });
+      // Vérifier le type de contenu pour déterminer comment traiter la réponse
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const data = await response.json();
+        setDeveloperProfile(data);
+        if (data.apiKey) {
+          setActiveKey({
+            key: data.apiKey,
+            createdAt: new Date(data.updatedAt || data.createdAt),
+            isActive: true
+          });
+        }
+      } else {
+        console.warn("La réponse n'est pas au format JSON");
+        throw new Error("La réponse du serveur n'est pas au format JSON valide");
       }
     } catch (error) {
-      console.error('Erreur:', error);
+      console.error('Erreur lors de la récupération du profil:', error);
       setError(error.message);
     } finally {
       setIsLoading(false);
@@ -67,9 +89,15 @@ export default function ApiKeyManagement() {
     
     try {
       const token = getAuthToken();
-      const newKey = 'cesi_' + Math.random().toString(36).substring(2) + Date.now().toString(36);
+      if (!process.env.NEXT_PUBLIC_THIRD_PARTY_API_URL) {
+        throw new Error("L'URL de l'API des développeurs n'est pas configurée (NEXT_PUBLIC_THIRD_PARTY_API_URL)");
+      }
       
-      const response = await fetch(`https://api-cesieats.arenz-proxmox.fr/dev/api/developers/${user.id}`, {
+      const newKey = 'cesi_' + Math.random().toString(36).substring(2) + Date.now().toString(36);
+      const apiUrl = `${process.env.NEXT_PUBLIC_THIRD_PARTY_API_URL}/api/developers/${user.id}`;
+      console.log('Génération de clé API:', apiUrl);
+      
+      const response = await fetch(apiUrl, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -82,13 +110,29 @@ export default function ApiKeyManagement() {
         }),
       });
       
-      const data = await response.json();
-      
       if (!response.ok) {
-        throw new Error(data.message || 'Erreur lors de la génération de la clé API');
+        // Vérifier le type de contenu de la réponse
+        const contentType = response.headers.get('content-type');
+        
+        if (contentType && contentType.includes('application/json')) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || `Erreur ${response.status}: Impossible de générer la clé API`);
+        } else {
+          const errorText = await response.text();
+          throw new Error(`Erreur ${response.status}: ${errorText || 'Impossible de générer la clé API'}`);
+        }
       }
       
-      setDeveloperProfile(data);
+      // Vérifier le type de contenu pour déterminer comment traiter la réponse
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const data = await response.json();
+        setDeveloperProfile(prev => ({ ...prev, ...data, apiKey: newKey }));
+      } else {
+        console.warn("La réponse n'est pas au format JSON, mais la requête a réussi");
+        setDeveloperProfile(prev => ({ ...prev, apiKey: newKey }));
+      }
+      
       setActiveKey({
         key: newKey,
         createdAt: new Date(),
@@ -96,7 +140,7 @@ export default function ApiKeyManagement() {
       });
       setSuccessMessage('Clé API générée avec succès');
     } catch (error) {
-      console.error('Erreur:', error);
+      console.error('Erreur lors de la génération de la clé API:', error);
       setError(error.message);
     } finally {
       setIsLoading(false);
@@ -112,8 +156,14 @@ export default function ApiKeyManagement() {
     
     try {
       const token = getAuthToken();
+      if (!process.env.NEXT_PUBLIC_THIRD_PARTY_API_URL) {
+        throw new Error("L'URL de l'API des développeurs n'est pas configurée (NEXT_PUBLIC_THIRD_PARTY_API_URL)");
+      }
       
-      const response = await fetch(`https://api-cesieats.arenz-proxmox.fr/dev/api/developers/${user.id}`, {
+      const apiUrl = `${process.env.NEXT_PUBLIC_THIRD_PARTY_API_URL}/api/developers/${user.id}`;
+      console.log('Révocation de clé API:', apiUrl);
+      
+      const response = await fetch(apiUrl, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -126,17 +176,33 @@ export default function ApiKeyManagement() {
         }),
       });
       
-      const data = await response.json();
-      
       if (!response.ok) {
-        throw new Error(data.message || 'Erreur lors de la révocation de la clé API');
+        // Vérifier le type de contenu de la réponse
+        const contentType = response.headers.get('content-type');
+        
+        if (contentType && contentType.includes('application/json')) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || `Erreur ${response.status}: Impossible de révoquer la clé API`);
+        } else {
+          const errorText = await response.text();
+          throw new Error(`Erreur ${response.status}: ${errorText || 'Impossible de révoquer la clé API'}`);
+        }
       }
       
-      setDeveloperProfile(data);
+      // Traiter la réponse en fonction du type de contenu
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const data = await response.json();
+        setDeveloperProfile(prev => ({ ...prev, ...data, apiKey: null }));
+      } else {
+        console.warn("La réponse n'est pas au format JSON, mais la requête a réussi");
+        setDeveloperProfile(prev => ({ ...prev, apiKey: null }));
+      }
+      
       setActiveKey(null);
       setSuccessMessage('Clé API révoquée avec succès');
     } catch (error) {
-      console.error('Erreur:', error);
+      console.error('Erreur lors de la révocation de la clé API:', error);
       setError(error.message);
     } finally {
       setIsLoading(false);
@@ -224,21 +290,22 @@ export default function ApiKeyManagement() {
               ) : 'Générer Nouvelle Clé'}
             </button>
           ) : (
-            <button 
-              onClick={revokeKey}
-              disabled={isLoading}
-              className={`bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
-            >
-              {isLoading ? (
-                <>
-                  <svg className="animate-spin inline -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Révocation...
-                </>
-              ) : 'Révoquer Clé API'}
-            </button>
+            <>
+              <button 
+                onClick={revokeKey}
+                disabled={isLoading}
+                className={`bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
+              >
+                {isLoading ? 'Révocation...' : 'Révoquer Clé'}
+              </button>
+              <button 
+                onClick={generateApiKey}
+                disabled={isLoading}
+                className={`bg-[#EF8732] hover:bg-[#EF8732]/90 text-white px-4 py-2 rounded-md text-sm font-medium ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
+              >
+                {isLoading ? 'Génération...' : 'Régénérer Clé'}
+              </button>
+            </>
           )}
         </div>
         

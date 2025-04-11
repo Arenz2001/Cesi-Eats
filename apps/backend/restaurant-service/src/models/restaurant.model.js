@@ -19,6 +19,10 @@ const dishSchema = new mongoose.Schema({
   category: {
     type: String,
     trim: true
+  },
+  imageUrl: {
+    type: String,
+    trim: true
   }
 });
 
@@ -77,6 +81,18 @@ const restaurantSchema = new mongoose.Schema({
       default: 'France'
     }
   },
+  imageUrl: {
+    type: String,
+    trim: true
+  },
+  description: {
+    type: String,
+    trim: true
+  },
+  cuisineType: {
+    type: String,
+    trim: true
+  },
   dishes: [dishSchema],    // Collection de tous les plats
   menus: [MenuSchema],     // Collection de tous les menus
   createdAt: {
@@ -95,4 +111,6 @@ restaurantSchema.pre('save', function(next) {
   next();
 });
 
-module.exports = mongoose.model('Restaurant', restaurantSchema);
+const Restaurant = mongoose.model('Restaurant', restaurantSchema);
+
+module.exports = Restaurant;

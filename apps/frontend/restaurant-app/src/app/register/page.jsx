@@ -4,6 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "react-hot-toast";
+import { Toaster } from "react-hot-toast";
 
 export default function Register() {
   const router = useRouter();
@@ -106,7 +108,7 @@ export default function Register() {
     
     try {
       // Appel à l'API d'inscription
-      const response = await fetch('https://api-cesieats.arenz-proxmox.fr/auth/register', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_AUTH_API_URL}/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -115,8 +117,6 @@ export default function Register() {
           email: formData.email,
           password: formData.password,
           role: 'restaurant', // Rôle spécifique pour cette application
-        //   firstName: formData.firstName,
-        //   lastName: formData.lastName
         }),
       });
 
@@ -124,16 +124,17 @@ export default function Register() {
       
       if (response.ok) {
         // Inscription réussie dans l'authentification
-        // Maintenant, créer le profil développeur
+        // Maintenant, créer le profil restaurant
         try {
-          const developerResponse = await fetch('http://localhost:3002/api/restaurants', {
+          const restaurantResponse = await fetch(`${process.env.NEXT_PUBLIC_RESTAURANT_API_URL}/api/restaurants`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
+              'Authorization': `Bearer ${data.token}`
             },
             body: JSON.stringify({
               name: formData.name,
-              address:{
+              address: {
                 street: formData.address,
                 city: formData.city,
                 postalCode: formData.postalCode,
@@ -142,29 +143,39 @@ export default function Register() {
             }),
           });
 
-          if (!developerResponse.ok) {
-            console.error('Erreur lors de la création du profil développeur');
+          if (!restaurantResponse.ok) {
+            const errorData = await restaurantResponse.json().catch(() => ({}));
+            throw new Error(errorData.message || 'Erreur lors de la création du profil restaurant');
           } else {
-            const developerData = await developerResponse.json();
-            console.log('Profil développeur créé avec succès:', developerData);
+            const restaurantData = await restaurantResponse.json();
+            console.log('Profil restaurant créé avec succès:', restaurantData);
+            
+            // Stocker le token et les informations utilisateur
+            localStorage.setItem('accessToken', data.token);
+            localStorage.setItem('user', JSON.stringify(data.user));
+            
+            // Inscription réussie
+            setRegisterSuccess(true);
+            toast.success('Inscription réussie ! Redirection vers la page de connexion...');
+            
+            // Redirection après un délai (pour montrer le message de succès)
+            setTimeout(() => {
+              router.push('/login');
+            }, 2000);
           }
         } catch (error) {
-          console.error('Erreur lors de la création du profil développeur:', error);
+          console.error('Erreur lors de la création du profil restaurant:', error);
+          setRegisterError('Erreur lors de la création du profil restaurant. Veuillez réessayer.');
+          toast.error('Erreur lors de la création du profil restaurant. Veuillez réessayer.');
         }
-        
-        // Inscription réussie
-        setRegisterSuccess(true);
-        
-        // Redirection après un délai (pour montrer le message de succès)
-        setTimeout(() => {
-          router.push('/login');
-        }, 2000);
       } else {
         // Gestion des erreurs retournées par l'API
         setRegisterError(data.message || 'Erreur lors de l\'inscription');
+        toast.error(data.message || 'Erreur lors de l\'inscription');
       }
     } catch (error) {
       setRegisterError('Erreur de connexion au serveur. Veuillez réessayer.');
+      toast.error('Erreur de connexion au serveur. Veuillez réessayer.');
       console.error('Erreur d\'inscription:', error);
     } finally {
       setIsLoading(false);
@@ -173,6 +184,7 @@ export default function Register() {
 
   return (
     <div className="flex min-h-screen">
+      <Toaster position="top-center" />
       {/* Left section - Form */}
       <div className="w-full md:w-1/2 flex flex-col justify-center px-8 md:px-16 lg:px-24">
         <div className="max-w-md mx-auto">

@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { jwtDecode } from 'jwt-decode';
+import { toast } from 'react-hot-toast';
 
 // Création du contexte d'authentification
 const AuthContext = createContext();
@@ -63,6 +64,7 @@ export function AuthProvider({ children }) {
         id: decoded.userId,
         email: decoded.email,
         role: decoded.role,
+        id_restaurant: decoded.id_restaurant || null,
       };
     } catch (error) {
       console.error('Erreur lors du décodage du token:', error);
@@ -75,7 +77,7 @@ export function AuthProvider({ children }) {
     setError(null);
     
     try {
-      const response = await fetch('https://api-cesieats.arenz-proxmox.fr/auth/login', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_AUTH_API_URL}/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -94,7 +96,7 @@ export function AuthProvider({ children }) {
       // Vérifier si l'utilisateur a le rôle approprié
       const decodedToken = jwtDecode(token);
       if (decodedToken.role !== 'restaurant') {
-        throw new Error('Accès refusé. Cette application est réservée aux développeurs.');
+        throw new Error('Accès refusé. Cette application est réservée aux restaurants.');
       }
       
       // Stocker le token selon l'option "Se souvenir de moi"
@@ -108,9 +110,11 @@ export function AuthProvider({ children }) {
       const userData = getUserFromToken(token);
       setUser(userData);
       
+      toast.success('Connexion réussie !');
       return { success: true, user: userData };
     } catch (error) {
       setError(error.message);
+      toast.error(error.message || 'Erreur lors de la connexion');
       return { success: false, error: error.message };
     }
   };
@@ -120,6 +124,7 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('auth_token');
     sessionStorage.removeItem('auth_token');
     setUser(null);
+    toast.success('Vous avez été déconnecté');
     router.push('/login');
   };
 

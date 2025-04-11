@@ -64,6 +64,7 @@ export default function PlatsPage() {
     const [platToDelete, setPlatToDelete] = useState(null)
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState(null)
+    const [successMessage, setSuccessMessage] = useState(null)
 
     // Récupérer les plats depuis l'API
     useEffect(() => {
@@ -75,7 +76,14 @@ export default function PlatsPage() {
 
             try {
                 setIsLoading(true)
-                const response = await fetch(`http://localhost:3002/api/restaurants/${user.email}/menu`, {
+                // Utiliser l'id_restaurant pour récupérer les plats
+                const restaurantId = user.id_restaurant
+                
+                if (!restaurantId) {
+                    throw new Error("ID du restaurant non disponible")
+                }
+                
+                const response = await fetch(`${process.env.NEXT_PUBLIC_RESTAURANT_API_URL}/${restaurantId}/menu`, {
                     headers: {
                         'Authorization': `Bearer ${getAuthToken()}`
                     }
@@ -86,7 +94,8 @@ export default function PlatsPage() {
                 }
 
                 const data = await response.json()
-                setPlats(data)
+                // La réponse contient un objet avec dishes et menus, nous utilisons seulement les dishes
+                setPlats(data.dishes || [])
             } catch (err) {
                 console.error('Erreur lors du chargement des plats:', err)
                 setError("Impossible de charger les plats. Veuillez réessayer plus tard.")
@@ -109,11 +118,11 @@ export default function PlatsPage() {
     }
 
     const confirmDelete = async () => {
-        if (!platToDelete || !user?.id) return
+        if (!platToDelete || !user?.id_restaurant) return
 
         try {
             setIsLoading(true)
-            const response = await fetch(`http://localhost:3002/api/restaurants/${user.email}/dishes/${platToDelete}`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_RESTAURANT_API_URL}/${user.id_restaurant}/dishes/${platToDelete}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${getAuthToken()}`
@@ -126,6 +135,14 @@ export default function PlatsPage() {
 
             // Mise à jour de l'état local après suppression
             setPlats((prev) => prev.filter((plat) => plat._id !== platToDelete))
+            
+            // Affichage d'un message de succès
+            setSuccessMessage('Plat supprimé avec succès')
+            
+            // Effacer le message après 3 secondes
+            setTimeout(() => {
+                setSuccessMessage(null)
+            }, 3000)
         } catch (err) {
             console.error('Erreur lors de la suppression:', err)
             setError("Impossible de supprimer le plat. Veuillez réessayer.")
@@ -161,6 +178,12 @@ export default function PlatsPage() {
                 </div>
             )}
 
+            {successMessage && (
+                <div className="mx-6 mb-4 p-4 bg-green-100 border border-green-300 text-green-700 rounded-lg">
+                    {successMessage}
+                </div>
+            )}
+
             {plats.length === 0 && !isLoading ? (
                 <div className="flex flex-col items-center justify-center mt-12 p-8">
                     <div className="text-center mb-6">
@@ -183,7 +206,7 @@ export default function PlatsPage() {
                             description={plat.description || 'Aucune description'}
                             price={`${(plat.price || 0).toFixed(2)} €`}
                             category={plat.category || 'Non catégorisé'}
-                            image={plat.image || '/placeholder-food.jpg'}
+                            image={plat.imageUrl || '/placeholder-food.jpg'}
                             onEdit={() => handleEdit(plat._id || plat.id)}
                             onDelete={() => setPlatToDelete(plat._id || plat.id)}
                         />

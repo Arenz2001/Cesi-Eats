@@ -1,165 +1,316 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import { Search } from 'lucide-react'
-import { useSearchParams } from 'next/navigation' // ✅ Ajout
+import { Search, MapPin, Filter, Star, TagIcon, DollarSignIcon, Clock } from 'lucide-react'
+import { useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 
 export default function RestaurantFilter() {
     const searchParams = useSearchParams()
 
-    // Plus tard, ces données viendront de ton back via API
     const [restaurants, setRestaurants] = useState([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState(null)
     const [searchQuery, setSearchQuery] = useState('')
     const [selectedCuisine, setSelectedCuisine] = useState('All')
-    const [selectedRatings, setSelectedRatings] = useState([4, 3])
+    const [selectedPriceRange, setSelectedPriceRange] = useState('All')
+    const [selectedCity, setSelectedCity] = useState('All')
+    const [selectedOffers, setSelectedOffers] = useState([])
     const [selectedCategory, setSelectedCategory] = useState('All')
+    
+    // Liste des types de cuisine disponibles
+    const [cuisineTypes, setCuisineTypes] = useState(['All'])
+    const [categoryTypes, setCategoryTypes] = useState(['All'])
+    const [cityList, setCityList] = useState(['All'])
 
-    // Simule un fetch depuis ton back
+    // Prix prédéfinis
+    const priceRanges = [
+        { value: 'All', label: 'Tous les prix' },
+        { value: 'budget', label: 'Économique (< 15€)' },
+        { value: 'moderate', label: 'Modéré (15-25€)' },
+        { value: 'expensive', label: 'Cher (> 25€)' }
+    ]
+
+    // Offres spéciales
+    const offerOptions = [
+        { value: 'livraison_gratuite', label: 'Livraison gratuite' },
+        { value: 'reduction', label: 'Réduction' },
+        { value: 'nouveaute', label: 'Nouveau restaurant' }
+    ]
+
     useEffect(() => {
-
         const cuisine = searchParams.get('cuisine');
         const category = searchParams.get('category');
+        const city = searchParams.get('city');
+        const search = searchParams.get('search');
+        
         if (cuisine) {
             setSelectedCuisine(cuisine);
         }
         if (category) {
             setSelectedCategory(category);
         }
-        // Remplace cette partie avec un appel API plus tard
+        if (city) {
+            setSelectedCity(city);
+        }
+        if (search) {
+            setSearchQuery(search);
+        }
+        
+        // Fonction pour récupérer les restaurants depuis l'API
         const fetchRestaurants = async () => {
-            const data = [
-                {
-                    name: 'La Piazza',
-                    cuisine: 'Italian',
-                    description: 'Restaurant Italien authentique!',
-                    rating: 4,
-                    image: '/pizza.png',
-                    category: "Fast Food"
-
-                },
-                {
-                    name: 'El Sol',
-                    cuisine: 'Mexican',
-                    description: 'Spicy and flavorful Mexican dishes.',
-                    rating: 4,
-                    image: '/pizza.png',
-                    category: "Healthy"
-
-                },
-                {
-                    name: 'Sushi Zen',
-                    cuisine: 'Japanese',
-                    description: 'Fresh sushi and sashimi crafted to perfection.',
-                    rating: 4.5,
-                    image: '/pizza.png',
-                    category: "Fast Food"
-
-                },
-                {
-                    name: 'El Sol',
-                    cuisine: 'Mexican',
-                    description: 'Spicy and flavorful Mexican dishes.',
-                    rating: 4,
-                    image: '/pizza.png',
-                    category: "Healthy"
-
-                },
-                {
-                    name: 'Sushi Zen',
-                    cuisine: 'Japanese',
-                    description: 'Fresh sushi and sashimi crafted to perfection.',
-                    rating: 4.5,
-                    image: '/pizza.png',
-                    category: "Pizza"
-
-                },
-            ]
-            setRestaurants(data)
+            setLoading(true)
+            try {
+                const response = await fetch('http://localhost:3002/')
+                if (!response.ok) {
+                    throw new Error('Erreur lors de la récupération des restaurants')
+                }
+                const data = await response.json()
+                
+                setRestaurants(data)
+                
+                // Extraire les types de cuisine uniques
+                const cuisines = ['All', ...new Set(data.map(restaurant => restaurant.cuisineType).filter(Boolean))]
+                setCuisineTypes(cuisines)
+                
+                // Extraire les catégories uniques des plats
+                const categories = ['All']
+                data.forEach(restaurant => {
+                    restaurant.dishes.forEach(dish => {
+                        if (dish.category && !categories.includes(dish.category)) {
+                            categories.push(dish.category)
+                        }
+                    })
+                })
+                setCategoryTypes(categories)
+                
+                // Extraire les villes uniques
+                const cities = ['All', ...new Set(data.map(restaurant => restaurant.address.city).filter(Boolean))]
+                setCityList(cities)
+                
+                setLoading(false)
+            } catch (err) {
+                console.error('Erreur lors du chargement des restaurants:', err)
+                setError(err.message)
+                setLoading(false)
+            }
         }
 
         fetchRestaurants()
     }, [searchParams])
 
+    // Fonction pour calculer le prix moyen d'un restaurant
+    const getAveragePrice = (restaurant) => {
+        if (!restaurant.dishes || restaurant.dishes.length === 0) return 0;
+        const sum = restaurant.dishes.reduce((acc, dish) => acc + dish.price, 0);
+        return sum / restaurant.dishes.length;
+    }
 
+    // Fonction pour rechercher dans les restaurants et les plats
+    const matchesSearch = (restaurant, query) => {
+        if (!query) return true;
+        
+        const lowerQuery = query.toLowerCase();
+        
+        // Recherche dans le nom du restaurant
+        if (restaurant.name.toLowerCase().includes(lowerQuery)) return true;
+        
+        // Recherche dans la description du restaurant
+        if (restaurant.description && restaurant.description.toLowerCase().includes(lowerQuery)) return true;
+        
+        // Recherche dans le type de cuisine
+        if (restaurant.cuisineType && restaurant.cuisineType.toLowerCase().includes(lowerQuery)) return true;
+        
+        // Recherche dans l'adresse
+        if (restaurant.address) {
+            const address = [
+                restaurant.address.street,
+                restaurant.address.city,
+                restaurant.address.postalCode,
+                restaurant.address.country
+            ].filter(Boolean).join(' ').toLowerCase();
+            
+            if (address.includes(lowerQuery)) return true;
+        }
+        
+        // Recherche dans les plats
+        if (restaurant.dishes && restaurant.dishes.length > 0) {
+            return restaurant.dishes.some(dish => (
+                dish.name.toLowerCase().includes(lowerQuery) ||
+                (dish.description && dish.description.toLowerCase().includes(lowerQuery)) ||
+                (dish.category && dish.category.toLowerCase().includes(lowerQuery))
+            ));
+        }
+        
+        return false;
+    }
 
     // Logique de filtrage
     const filteredRestaurants = restaurants.filter((restaurant) => {
         const matchCuisine =
-            selectedCuisine === 'All' || restaurant.cuisine === selectedCuisine
+            selectedCuisine === 'All' || restaurant.cuisineType === selectedCuisine
 
-        const matchRating = selectedRatings.some(
-            (r) => Math.floor(restaurant.rating) === r
-        )
+        const matchSearch = matchesSearch(restaurant, searchQuery);
 
-        const matchSearch =
-            restaurant.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            restaurant.description.toLowerCase().includes(searchQuery.toLowerCase())
-
+        // Vérifier si un plat du restaurant correspond à la catégorie sélectionnée
         const matchCategory =
-            selectedCategory === 'All' || restaurant.category === selectedCategory
+            selectedCategory === 'All' || 
+            restaurant.dishes.some(dish => dish.category === selectedCategory)
+            
+        // Filtre par ville
+        const matchCity = 
+            selectedCity === 'All' || 
+            restaurant.address.city === selectedCity
+        
+        // Filtre par gamme de prix
+        const avgPrice = getAveragePrice(restaurant);
+        const matchPrice = 
+            selectedPriceRange === 'All' || 
+            (selectedPriceRange === 'budget' && avgPrice < 15) ||
+            (selectedPriceRange === 'moderate' && avgPrice >= 15 && avgPrice <= 25) ||
+            (selectedPriceRange === 'expensive' && avgPrice > 25)
+        
+        // Pour l'instant, les offres sont simulées (à implémenter réellement plus tard)
+        // Considérons que tous les restaurants correspondent si aucune offre n'est sélectionnée
+        const matchOffers = selectedOffers.length === 0 || 
+            selectedOffers.includes('reduction') || // Simulation pour la démonstration
+            selectedOffers.includes('nouveaute');   // Simulation pour la démonstration
 
-        return matchCuisine && matchRating && matchSearch && matchCategory
+        return matchCuisine && matchSearch && matchCategory && matchCity && matchPrice && matchOffers
     })
+
+    // Fonction pour gérer les offres (multiple sélection)
+    const handleOfferToggle = (value) => {
+        setSelectedOffers(prev => 
+            prev.includes(value) 
+                ? prev.filter(v => v !== value) 
+                : [...prev, value]
+        );
+    }
+
+    if (loading) {
+        return (
+            <div className="flex justify-center items-center h-screen">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
+            </div>
+        )
+    }
+
+    if (error) {
+        return (
+            <div className="flex justify-center items-center h-screen">
+                <div className="bg-red-100 text-red-700 p-4 rounded-lg">
+                    <p className="font-bold">Erreur de chargement</p>
+                    <p>{error}</p>
+                </div>
+            </div>
+        )
+    }
 
     return (
         <div className="flex flex-col lg:flex-row gap-6 px-6 py-24 bg-[#fffefc]">
             {/* Sidebar Filtres */}
-            <aside className="lg:w-1/4 w-full p-4 rounded-xl border shadow-sm bg-white">
-                <h2 className="text-xl font-bold mb-4">Filtres</h2>
+            <aside className="lg:w-1/4 w-full p-6 rounded-xl border shadow-sm bg-white">
+                <div className="flex items-center gap-2 mb-6">
+                    <Filter size={18} className="text-orange-500" />
+                    <h2 className="text-xl font-bold">Filtres</h2>
+                </div>
 
                 {/* Cuisine */}
                 <div className="mb-6">
-                    <label htmlFor="cuisine" className="block text-sm font-medium mb-1">
+                    <label htmlFor="cuisine" className="flex items-center gap-2 text-sm font-medium mb-2">
+                        <TagIcon size={16} className="text-orange-500" />
                         Type de cuisine
                     </label>
                     <select
                         id="cuisine"
                         value={selectedCuisine}
                         onChange={(e) => setSelectedCuisine(e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded-md"
+                        className="w-full p-2 border border-gray-300 rounded-md bg-gray-50"
                     >
-                        <option value="All">Toutes</option>
-                        <option value="Italian">Italienne</option>
-                        <option value="Mexican">Mexicaine</option>
-                        <option value="Japanese">Japonaise</option>
+                        {cuisineTypes.map((cuisine, index) => (
+                            <option key={index} value={cuisine}>
+                                {cuisine === 'All' ? 'Toutes les cuisines' : cuisine}
+                            </option>
+                        ))}
                     </select>
                 </div>
 
-                {/* Catégorie */}
+                {/* Ville */}
                 <div className="mb-6">
-                    <label htmlFor="category" className="block text-sm font-medium mb-1">
-                        Catégorie
+                    <label htmlFor="city" className="flex items-center gap-2 text-sm font-medium mb-2">
+                        <MapPin size={16} className="text-orange-500" />
+                        Ville
+                    </label>
+                    <select
+                        id="city"
+                        value={selectedCity}
+                        onChange={(e) => setSelectedCity(e.target.value)}
+                        className="w-full p-2 border border-gray-300 rounded-md bg-gray-50"
+                    >
+                        {cityList.map((city, index) => (
+                            <option key={index} value={city}>
+                                {city === 'All' ? 'Toutes les villes' : city}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+                {/* Prix */}
+                <div className="mb-6">
+                    <label htmlFor="price" className="flex items-center gap-2 text-sm font-medium mb-2">
+                        <DollarSignIcon size={16} className="text-orange-500" />
+                        Budget
+                    </label>
+                    <select
+                        id="price"
+                        value={selectedPriceRange}
+                        onChange={(e) => setSelectedPriceRange(e.target.value)}
+                        className="w-full p-2 border border-gray-300 rounded-md bg-gray-50"
+                    >
+                        {priceRanges.map((range, index) => (
+                            <option key={index} value={range.value}>
+                                {range.label}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+                {/* Catégorie de plats */}
+                <div className="mb-6">
+                    <label htmlFor="category" className="flex items-center gap-2 text-sm font-medium mb-2">
+                        <Clock size={16} className="text-orange-500" />
+                        Type de plats
                     </label>
                     <select
                         id="category"
                         value={selectedCategory}
                         onChange={(e) => setSelectedCategory(e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded-md"
+                        className="w-full p-2 border border-gray-300 rounded-md bg-gray-50"
                     >
-                        <option value="All">Toutes</option>
-                        <option value="Fast Food">Fast Food</option>
-                        <option value="Pizza">Pizza</option>
-                        <option value="Healthy">Healthy</option>
+                        {categoryTypes.map((category, index) => (
+                            <option key={index} value={category}>
+                                {category === 'All' ? 'Tous les types de plats' : category}
+                            </option>
+                        ))}
                     </select>
                 </div>
 
-                {/* Rating */}
+                {/* Offres spéciales */}
                 <div>
-                    <p className="text-sm font-medium mb-2">Évaluation</p>
-                    {[4, 3].map((rating) => (
-                        <label key={rating} className="flex items-center gap-2 mb-1 text-sm">
+                    <p className="flex items-center gap-2 text-sm font-medium mb-2">
+                        <Star size={16} className="text-orange-500" />
+                        Offres spéciales
+                    </p>
+                    {offerOptions.map((offer, index) => (
+                        <label key={index} className="flex items-center gap-2 mb-2 text-sm">
                             <input
                                 type="checkbox"
-                                checked={selectedRatings.includes(rating)}
-                                onChange={() =>
-                                    setSelectedRatings((prev) =>
-                                        prev.includes(rating)
-                                            ? prev.filter((r) => r !== rating)
-                                            : [...prev, rating]
-                                    )
-                                }
+                                checked={selectedOffers.includes(offer.value)}
+                                onChange={() => handleOfferToggle(offer.value)}
+                                className="accent-orange-500"
                             />
-                            {rating} ★
+                            {offer.label}
                         </label>
                     ))}
                 </div>
@@ -168,7 +319,7 @@ export default function RestaurantFilter() {
             {/* Main */}
             <main className="flex-1">
                 {/* Search bar */}
-                <div className="relative mb-8 w-full max-w-md mx-auto">
+                <div className="relative mb-8 w-full max-w-xl mx-auto">
                     <input
                         type="text"
                         placeholder="Rechercher un restaurant..."
@@ -179,35 +330,89 @@ export default function RestaurantFilter() {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                 </div>
 
+                {/* Nombre de résultats */}
+                <p className="text-gray-600 mb-4">
+                    {filteredRestaurants.length} {filteredRestaurants.length > 1 ? 'restaurants trouvés' : 'restaurant trouvé'}
+                </p>
+
                 {/* Grid restaurants */}
                 {filteredRestaurants.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {filteredRestaurants.map((restaurant, index) => (
-                            <div
-                                key={index}
-                                className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition"
-                            >
-                                <img
-                                    src={restaurant.image}
-                                    alt={restaurant.name}
-                                    className="w-full h-48 object-cover"
-                                />
-                                <div className="p-4">
-                                    <h3 className="text-lg font-semibold text-gray-800">{restaurant.name}</h3>
-                                    <p className="text-sm text-gray-600 mb-2">{restaurant.description}</p>
-                                    <p className="text-yellow-600 text-sm mb-4">
-                                        {"★".repeat(Math.floor(restaurant.rating))}{" "}
-                                        {restaurant.rating % 1 ? "½" : ""}
-                                    </p>
-                                    <button className="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded-full text-sm font-medium transition">
-                                        Voir la carte
-                                    </button>
+                        {filteredRestaurants.map((restaurant, index) => {
+                            const avgPrice = getAveragePrice(restaurant);
+                            let priceIndicator = '';
+                            
+                            if (avgPrice < 15) priceIndicator = '€';
+                            else if (avgPrice <= 25) priceIndicator = '€€';
+                            else priceIndicator = '€€€';
+
+                            return (
+                                <div
+                                    key={index}
+                                    className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition"
+                                >
+                                    <div className="h-48 relative">
+                                        <img
+                                            src={restaurant.imageUrl || '/pizza.png'}
+                                            alt={restaurant.name}
+                                            className="w-full h-full object-cover"
+                                        />
+                                        {/* Simulation d'un badge pour les nouvelles offres */}
+                                        {index % 3 === 0 && (
+                                            <div className="absolute top-3 right-3 bg-orange-500 text-white text-xs px-2 py-1 rounded-full">
+                                                Nouveau
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="p-4">
+                                        <div className="flex justify-between items-start mb-2">
+                                            <h3 className="text-lg font-semibold text-gray-800">{restaurant.name}</h3>
+                                            <span className="text-gray-500 text-sm">{priceIndicator}</span>
+                                        </div>
+                                        <p className="text-sm text-gray-600 mb-1">{restaurant.description || `Cuisine ${restaurant.cuisineType}`}</p>
+                                        <div className="flex items-center gap-1 mb-2">
+                                            <MapPin size={14} className="text-orange-500" />
+                                            <p className="text-xs text-gray-500">
+                                                {restaurant.address.city}, {restaurant.address.postalCode}
+                                            </p>
+                                        </div>
+                                        <div className="flex items-center gap-2 mb-4">
+                                            <span className="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full">
+                                                {restaurant.cuisineType}
+                                            </span>
+                                            {restaurant.dishes.length > 0 && (
+                                                <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+                                                    {restaurant.dishes.length} plats
+                                                </span>
+                                            )}
+                                        </div>
+                                        <Link href={`/restaurant/${restaurant._id}`}>
+                                            <button className="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded-full text-sm font-medium transition">
+                                                Voir la carte
+                                            </button>
+                                        </Link>
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 ) : (
-                    <p className="text-center text-gray-500 text-sm mt-10">Aucun restaurant trouvé.</p>
+                    <div className="text-center py-10">
+                        <p className="text-gray-500 text-sm mt-10">Aucun restaurant ne correspond à votre recherche.</p>
+                        <button 
+                            onClick={() => {
+                                setSelectedCuisine('All');
+                                setSelectedCategory('All');
+                                setSelectedCity('All');
+                                setSelectedPriceRange('All');
+                                setSelectedOffers([]);
+                                setSearchQuery('');
+                            }}
+                            className="mt-4 text-orange-500 hover:text-orange-600 text-sm font-medium"
+                        >
+                            Réinitialiser les filtres
+                        </button>
+                    </div>
                 )}
             </main>
         </div>

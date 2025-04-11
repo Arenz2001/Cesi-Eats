@@ -2,15 +2,16 @@
 import React from "react";
 import Image from "next/image";
 import { useCart } from '@/context/CartContext';
+import { toast } from 'react-hot-toast';
 
 const Dish = ({ dish }) => {
     const { id, name, desc, price, likes, imageUrl } = dish
     const { addToCart } = useCart();
 
-
     const handleAddToCart = () => {
         console.log("added to cart", dish)
         addToCart(dish);
+        toast.success(`${name} ajouté au panier`);
     }
     return (
         <div className="bg-white p-4 rounded-lg shadow-lg">
@@ -33,6 +34,5 @@ const Dish = ({ dish }) => {
         </div>
     );
 };
-
 
 export default Dish;

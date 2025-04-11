@@ -23,95 +23,60 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [accessToken, setAccessToken] = useState(null);
 
   // Routes qui ne nécessitent pas d'authentification
   const publicRoutes = ['/login', '/register', '/forgot-password'];
 
-  // Fonction pour vérifier si un token est valide
-  const isTokenValid = (token) => {
-    if (!token) return false;
-    
-    try {
-      const decoded = jwtDecode(token);
-      // Vérifier si le token a expiré
-      const currentTime = Date.now() / 1000;
-      if (decoded.exp < currentTime) {
-        return false;
-      }
-      
-      // Vérifier si l'utilisateur a le rôle approprié (developper)
-      return decoded.role === 'developper';
-    } catch (error) {
-      console.error('Erreur lors du décodage du token:', error);
-      return false;
-    }
+  // Fonction pour vérifier si l'utilisateur est authentifié
+  const isAuthenticated = () => {
+    return !!user;
   };
-
+  
   // Fonction pour récupérer le token d'authentification
   const getAuthToken = () => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
-    }
-    return null;
-  };
-
-  // Fonction pour décoder le token et extraire les informations utilisateur
-  const getUserFromToken = (token) => {
-    try {
-      const decoded = jwtDecode(token);
-      return {
-        id: decoded.userId,
-        email: decoded.email,
-        role: decoded.role,
-        firstName: decoded.firstName,
-        lastName: decoded.lastName,
-      };
-    } catch (error) {
-      console.error('Erreur lors du décodage du token:', error);
-      return null;
-    }
+    return localStorage.getItem('accessToken');
   };
 
   // Fonction de connexion
-  const login = async (email, password, rememberMe) => {
+  const login = async (email, password, rememberMe = false) => {
     setError(null);
     
     try {
-      const response = await fetch('https://auth-cesieats.arenz-proxmox.fr/api/auth/login', {
+      console.log('Tentative de connexion à:', `${process.env.NEXT_PUBLIC_AUTH_API_URL}/login`);
+      
+      // Faire une vraie requête à l'API
+      const response = await fetch(`${process.env.NEXT_PUBLIC_AUTH_API_URL}/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ email, password }),
       });
-
-      const data = await response.json();
       
       if (!response.ok) {
-        throw new Error(data.message || 'Erreur lors de la connexion');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Identifiants invalides');
       }
       
-      const token = data.token;
+      const data = await response.json();
       
       // Vérifier si l'utilisateur a le rôle approprié
-      const decodedToken = jwtDecode(token);
-      if (decodedToken.role !== 'developper') {
+      if (data.user && data.user.role !== 'developper') {
         throw new Error('Accès refusé. Cette application est réservée aux développeurs.');
       }
       
-      // Stocker le token selon l'option "Se souvenir de moi"
-      if (rememberMe) {
-        localStorage.setItem('auth_token', token);
-      } else {
-        sessionStorage.setItem('auth_token', token);
-      }
+      // Stocker le token et les données utilisateur
+      localStorage.setItem('accessToken', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
       
-      // Mettre à jour l'état de l'utilisateur
-      const userData = getUserFromToken(token);
-      setUser(userData);
+      // Mettre à jour l'état
+      setAccessToken(data.token);
+      setUser(data.user);
       
-      return { success: true, user: userData };
+      return { success: true, user: data.user };
     } catch (error) {
+      console.error('Erreur de connexion:', error);
       setError(error.message);
       return { success: false, error: error.message };
     }
@@ -119,41 +84,33 @@ export function AuthProvider({ children }) {
 
   // Fonction de déconnexion
   const logout = () => {
-    localStorage.removeItem('auth_token');
-    sessionStorage.removeItem('auth_token');
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('user');
+    setAccessToken(null);
     setUser(null);
+    setError(null);
     router.push('/login');
   };
 
-  // Vérification de l'authentification au chargement
+  // Charger l'utilisateur depuis le localStorage
   useEffect(() => {
-    const checkAuth = () => {
-      setLoading(true);
-      
-      // Récupérer le token
-      const token = getAuthToken();
-      
-      // Vérifier si le token est valide
-      if (isTokenValid(token)) {
-        const userData = getUserFromToken(token);
-        setUser(userData);
-      } else {
-        // Supprimer les tokens invalides
-        localStorage.removeItem('auth_token');
-        sessionStorage.removeItem('auth_token');
-        setUser(null);
-        
-        // Rediriger vers la page de connexion si la route actuelle n'est pas publique
-        if (!publicRoutes.includes(pathname)) {
-          router.push('/login');
+    const storedToken = localStorage.getItem('accessToken');
+    const storedUser = localStorage.getItem('user');
+    
+    if (storedToken) {
+      setAccessToken(storedToken);
+      if (storedUser) {
+        try {
+          setUser(JSON.parse(storedUser));
+        } catch (err) {
+          console.error('Erreur lors du parsing des données utilisateur:', err);
+          localStorage.removeItem('user');
         }
       }
-      
-      setLoading(false);
-    };
+    }
     
-    checkAuth();
-  }, [pathname, router]);
+    setLoading(false);
+  }, []);
 
   // Gérer les changements de route pour la protection des pages
   useEffect(() => {
@@ -169,11 +126,12 @@ export function AuthProvider({ children }) {
   // Valeur du contexte
   const value = {
     user,
+    accessToken,
     loading,
     error,
     login,
     logout,
-    isAuthenticated: !!user,
+    isAuthenticated,
     getAuthToken
   };
 

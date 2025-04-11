@@ -18,6 +18,12 @@ const userSchema = new mongoose.Schema({
     enum: ['customer', 'developper', 'restaurant', 'delivery', 'commercial'],
     default: 'customer'
   },
+  id_restaurant: {
+    type: String,
+    default: null,
+    // Ce champ est utilisé uniquement pour les comptes de type 'restaurant'
+    // Il fait le lien avec l'ID du restaurant dans le service restaurant
+  },
   createdAt: {
     type: Date,
     default: Date.now

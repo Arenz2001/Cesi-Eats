@@ -30,6 +30,12 @@ const router = express.Router();
  *             postalCode:
  *               type: string
  *               description: Code postal du restaurant
+ *         imageUrl:
+ *           type: string
+ *           description: URL de l'image du restaurant
+ *         description:
+ *           type: string
+ *           description: Description du restaurant
  *         cuisineType:
  *           type: string
  *           description: Type de cuisine
@@ -57,6 +63,9 @@ const router = express.Router();
  *         category:
  *           type: string
  *           description: Catégorie du plat
+ *         imageUrl:
+ *           type: string
+ *           description: URL de l'image du plat
  */
 
 // Validations

@@ -101,7 +101,7 @@ export default function Register() {
     
     try {
       // Appel à l'API d'inscription
-      const response = await fetch('https://api-cesieats.arenz-proxmox.fr/auth/register', {
+      const authResponse = await fetch(`${process.env.NEXT_PUBLIC_AUTH_API_URL}/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -109,39 +109,59 @@ export default function Register() {
         body: JSON.stringify({
           email: formData.email,
           password: formData.password,
-          role: 'developper', // Rôle spécifique pour cette application
-        //   firstName: formData.firstName,
-        //   lastName: formData.lastName
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          role: 'developper' // Rôle spécifique pour cette application
         }),
       });
 
-      const data = await response.json();
-      
-      if (response.ok) {
-        // Inscription réussie dans l'authentification
-        // Maintenant, créer le profil développeur
-        try {
-          const developerResponse = await fetch('https://api-cesieats.arenz-proxmox.fr/dev/api/developers', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              userId: data.user.id,
-              company: formData.company,
-              position: formData.position
-            }),
-          });
+      if (!authResponse.ok) {
+        const authError = await authResponse.json();
+        throw new Error(authError.message || 'Erreur lors de l\'inscription');
+      }
 
-          if (!developerResponse.ok) {
-            console.error('Erreur lors de la création du profil développeur');
-          } else {
-            const developerData = await developerResponse.json();
-            console.log('Profil développeur créé avec succès:', developerData);
+      const authData = await authResponse.json();
+      console.log('Inscription réussie:', authData);
+
+      // Maintenant, créer le profil développeur
+      try {
+        const developerResponse = await fetch(`${process.env.NEXT_PUBLIC_THIRD_PARTY_API_URL}/api/developers`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authData.token}`
+          },
+          body: JSON.stringify({
+            userId: authData.user.id,
+            company: formData.company,
+            position: formData.position
+          }),
+        });
+
+        // Vérifier d'abord si la requête a échoué
+        if (!developerResponse.ok) {
+          // Tenter de lire la réponse en tant que JSON
+          let developerError;
+          try {
+            developerError = await developerResponse.json();
+          } catch (e) {
+            // Si ce n'est pas du JSON, utiliser le texte brut
+            const errorText = await developerResponse.text();
+            throw new Error(`Erreur lors de la création du profil développeur (${developerResponse.status}): ${errorText}`);
           }
-        } catch (error) {
-          console.error('Erreur lors de la création du profil développeur:', error);
+          throw new Error(developerError.message || 'Erreur lors de la création du profil développeur');
         }
+
+        // Tenter de lire la réponse en tant que JSON
+        let developerData;
+        try {
+          developerData = await developerResponse.json();
+        } catch (e) {
+          console.warn('La réponse n\'était pas au format JSON, mais la requête a réussi');
+          developerData = { success: true };
+        }
+        
+        console.log('Profil développeur créé avec succès:', developerData);
         
         // Inscription réussie
         setRegisterSuccess(true);
@@ -150,12 +170,12 @@ export default function Register() {
         setTimeout(() => {
           router.push('/login');
         }, 2000);
-      } else {
-        // Gestion des erreurs retournées par l'API
-        setRegisterError(data.message || 'Erreur lors de l\'inscription');
+      } catch (error) {
+        console.error('Erreur lors de la création du profil développeur:', error);
+        setRegisterError(error.message || 'Erreur lors de la création du profil développeur');
       }
     } catch (error) {
-      setRegisterError('Erreur de connexion au serveur. Veuillez réessayer.');
+      setRegisterError(error.message || 'Erreur lors de l\'inscription');
       console.error('Erreur d\'inscription:', error);
     } finally {
       setIsLoading(false);
@@ -165,7 +185,7 @@ export default function Register() {
   return (
     <div className="flex min-h-screen">
       {/* Left section - Form */}
-      <div className="w-full md:w-1/2 flex flex-col justify-center px-8 md:px-16 lg:px-24">
+      <div className="w-full md:w-1/2 flex flex-col justify-center px-8 md:px-16 lg:px-24 py-8 overflow-auto">
         <div className="max-w-md mx-auto">
           {/* Logo and title */}
           <div className="mb-8">
@@ -194,35 +214,85 @@ export default function Register() {
 
           {/* Registration form */}
           <form className="space-y-4" onSubmit={handleSubmit}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <input
+                  type="text"
+                  name="firstName"
+                  placeholder="Prénom*"
+                  value={formData.firstName}
+                  onChange={handleChange}
+                  className={`w-full px-4 py-3 rounded-md bg-gray-100 border ${
+                    errors.firstName ? 'border-red-500' : 'border-gray-200'
+                  } focus:outline-none focus:ring-2 focus:ring-orange-500 text-black`}
+                />
+                {errors.firstName && (
+                  <p className="text-red-500 text-sm mt-1">{errors.firstName}</p>
+                )}
+              </div>
+              
+              <div>
+                <input
+                  type="text"
+                  name="lastName"
+                  placeholder="Nom*"
+                  value={formData.lastName}
+                  onChange={handleChange}
+                  className={`w-full px-4 py-3 rounded-md bg-gray-100 border ${
+                    errors.lastName ? 'border-red-500' : 'border-gray-200'
+                  } focus:outline-none focus:ring-2 focus:ring-orange-500 text-black`}
+                />
+                {errors.lastName && (
+                  <p className="text-red-500 text-sm mt-1">{errors.lastName}</p>
+                )}
+              </div>
+            </div>
+            
             <div>
               <input
-                type="text"
-                name="firstName"
-                placeholder="Prénom*"
-                value={formData.firstName}
+                type="email"
+                name="email"
+                placeholder="Email*"
+                value={formData.email}
                 onChange={handleChange}
                 className={`w-full px-4 py-3 rounded-md bg-gray-100 border ${
-                  errors.firstName ? 'border-red-500' : 'border-gray-200'
+                  errors.email ? 'border-red-500' : 'border-gray-200'
                 } focus:outline-none focus:ring-2 focus:ring-orange-500 text-black`}
               />
-              {errors.firstName && (
-                <p className="text-red-500 text-sm mt-1">{errors.firstName}</p>
+              {errors.email && (
+                <p className="text-red-500 text-sm mt-1">{errors.email}</p>
               )}
             </div>
             
             <div>
               <input
-                type="text"
-                name="lastName"
-                placeholder="Nom*"
-                value={formData.lastName}
+                type="password"
+                name="password"
+                placeholder="Mot de passe*"
+                value={formData.password}
                 onChange={handleChange}
                 className={`w-full px-4 py-3 rounded-md bg-gray-100 border ${
-                  errors.lastName ? 'border-red-500' : 'border-gray-200'
+                  errors.password ? 'border-red-500' : 'border-gray-200'
                 } focus:outline-none focus:ring-2 focus:ring-orange-500 text-black`}
               />
-              {errors.lastName && (
-                <p className="text-red-500 text-sm mt-1">{errors.lastName}</p>
+              {errors.password && (
+                <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+              )}
+            </div>
+            
+            <div>
+              <input
+                type="password"
+                name="confirmPassword"
+                placeholder="Confirmer le mot de passe*"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                className={`w-full px-4 py-3 rounded-md bg-gray-100 border ${
+                  errors.confirmPassword ? 'border-red-500' : 'border-gray-200'
+                } focus:outline-none focus:ring-2 focus:ring-orange-500 text-black`}
+              />
+              {errors.confirmPassword && (
+                <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>
               )}
             </div>
             
@@ -258,54 +328,6 @@ export default function Register() {
               )}
             </div>
             
-            <div>
-              <input
-                type="email"
-                name="email"
-                placeholder="Email*"
-                value={formData.email}
-                onChange={handleChange}
-                className={`w-full px-4 py-3 rounded-md bg-gray-100 border ${
-                  errors.email ? 'border-red-500' : 'border-gray-200'
-                } focus:outline-none focus:ring-2 focus:ring-orange-500 text-black`}
-              />
-              {errors.email && (
-                <p className="text-red-500 text-sm mt-1">{errors.email}</p>
-              )}
-            </div>
-
-            <div>
-              <input
-                type="password"
-                name="password"
-                placeholder="Mot de passe*"
-                value={formData.password}
-                onChange={handleChange}
-                className={`w-full px-4 py-3 rounded-md bg-gray-100 border ${
-                  errors.password ? 'border-red-500' : 'border-gray-200'
-                } focus:outline-none focus:ring-2 focus:ring-orange-500 text-black`}
-              />
-              {errors.password && (
-                <p className="text-red-500 text-sm mt-1">{errors.password}</p>
-              )}
-            </div>
-
-            <div>
-              <input
-                type="password"
-                name="confirmPassword"
-                placeholder="Confirmer le mot de passe*"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                className={`w-full px-4 py-3 rounded-md bg-gray-100 border ${
-                  errors.confirmPassword ? 'border-red-500' : 'border-gray-200'
-                } focus:outline-none focus:ring-2 focus:ring-orange-500 text-black`}
-              />
-              {errors.confirmPassword && (
-                <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>
-              )}
-            </div>
-
             <div className="flex items-start mt-4">
               <input
                 type="checkbox"
@@ -313,7 +335,7 @@ export default function Register() {
                 name="agreeTerms"
                 checked={formData.agreeTerms}
                 onChange={handleChange}
-                className={`mt-1 mr-2 ${errors.agreeTerms ? 'border-red-500' : ''}`}
+                className="mt-1 mr-2"
               />
               <label htmlFor="agreeTerms" className="text-sm text-gray-700">
                 J'accepte les <Link href="/terms" className="text-orange-500 hover:underline">conditions d'utilisation</Link> et la <Link href="/privacy" className="text-orange-500 hover:underline">politique de confidentialité</Link>
@@ -322,13 +344,13 @@ export default function Register() {
             {errors.agreeTerms && (
               <p className="text-red-500 text-sm mt-1">{errors.agreeTerms}</p>
             )}
-
+            
             <button
               type="submit"
               disabled={isLoading}
               className={`w-full py-3 ${
                 isLoading ? 'bg-orange-400' : 'bg-orange-500 hover:bg-orange-600'
-              } text-white font-medium rounded-md transition-colors flex justify-center items-center`}
+              } text-white font-medium rounded-md transition-colors flex justify-center items-center mt-6`}
             >
               {isLoading ? (
                 <>
@@ -353,10 +375,11 @@ export default function Register() {
       <div className="hidden md:block w-1/2 relative">
         <div className="relative w-full h-full">
           <Image
-            src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd"
-            alt="Plat de nourriture"
+            src="https://images.unsplash.com/photo-1518770660439-4636190af475"
+            alt="Image d'un développeur"
             fill
             priority
+            sizes="(max-width: 768px) 100vw, 50vw"
             style={{ objectFit: 'cover' }}
           />
         </div>
