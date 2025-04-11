@@ -1,0 +1,189 @@
+name: Build and Publish All Services Docker Images
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "frontend/**"
+      - "backend/**"
+      - "k8s/combined-deployment.yaml"
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  OWNER: Arenz2001
+
+jobs:
+  build-and-push-frontend:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        app:
+          [
+            customer-app,
+            delivery-app,
+            commercial-app,
+            restaurant-app,
+            third-party-dev-app,
+          ]
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.OWNER }}/cesi-eats/${{ matrix.app }}
+          tags: |
+            type=ref,event=branch
+            type=sha,format=long
+            latest
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend/${{ matrix.app }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  build-and-push-backend:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service:
+          [
+            auth-service,
+            customer-service,
+            order-service,
+            restaurant-service,
+            delivery-service,
+            third-party-dev-service,
+          ]
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.OWNER }}/cesi-eats/${{ matrix.service }}
+          tags: |
+            type=ref,event=branch
+            type=sha,format=long
+            latest
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend/${{ matrix.service }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy-to-kubernetes:
+    needs: [build-and-push-frontend, build-and-push-backend]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: "latest"
+
+      - name: Configure kubectl
+        run: |
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > kubeconfig.yaml
+          chmod 600 kubeconfig.yaml
+          export KUBECONFIG="$PWD/kubeconfig.yaml"
+          echo "=== Kubectl config ==="
+          kubectl config view --raw
+          echo "=== Testing connection ==="
+          kubectl cluster-info
+
+      - name: Update image tags in deployment file
+        run: |
+          COMMIT_SHA="${{ github.sha }}"
+          # Update frontend images
+          sed -i "s|ghcr.io/${{ env.OWNER }}/cesi-eats/customer-app:latest|ghcr.io/${{ env.OWNER }}/cesi-eats/customer-app:sha-$COMMIT_SHA|g" k8s/combined-deployment.yaml
+          sed -i "s|ghcr.io/${{ env.OWNER }}/cesi-eats/delivery-app:latest|ghcr.io/${{ env.OWNER }}/cesi-eats/delivery-app:sha-$COMMIT_SHA|g" k8s/combined-deployment.yaml
+          sed -i "s|ghcr.io/${{ env.OWNER }}/cesi-eats/commercial-app:latest|ghcr.io/${{ env.OWNER }}/cesi-eats/commercial-app:sha-$COMMIT_SHA|g" k8s/combined-deployment.yaml
+          sed -i "s|ghcr.io/${{ env.OWNER }}/cesi-eats/restaurant-app:latest|ghcr.io/${{ env.OWNER }}/cesi-eats/restaurant-app:sha-$COMMIT_SHA|g" k8s/combined-deployment.yaml
+          sed -i "s|ghcr.io/${{ env.OWNER }}/cesi-eats/third-party-dev-app:latest|ghcr.io/${{ env.OWNER }}/cesi-eats/third-party-dev-app:sha-$COMMIT_SHA|g" k8s/combined-deployment.yaml
+
+          # Update backend services images
+          sed -i "s|ghcr.io/${{ env.OWNER }}/cesi-eats/auth-service:latest|ghcr.io/${{ env.OWNER }}/cesi-eats/auth-service:sha-$COMMIT_SHA|g" k8s/combined-deployment.yaml
+          sed -i "s|ghcr.io/${{ env.OWNER }}/cesi-eats/customer-service:latest|ghcr.io/${{ env.OWNER }}/cesi-eats/customer-service:sha-$COMMIT_SHA|g" k8s/combined-deployment.yaml
+          sed -i "s|ghcr.io/${{ env.OWNER }}/cesi-eats/order-service:latest|ghcr.io/${{ env.OWNER }}/cesi-eats/order-service:sha-$COMMIT_SHA|g" k8s/combined-deployment.yaml
+          sed -i "s|ghcr.io/${{ env.OWNER }}/cesi-eats/restaurant-service:latest|ghcr.io/${{ env.OWNER }}/cesi-eats/restaurant-service:sha-$COMMIT_SHA|g" k8s/combined-deployment.yaml
+          sed -i "s|ghcr.io/${{ env.OWNER }}/cesi-eats/delivery-service:latest|ghcr.io/${{ env.OWNER }}/cesi-eats/delivery-service:sha-$COMMIT_SHA|g" k8s/combined-deployment.yaml
+          sed -i "s|ghcr.io/${{ env.OWNER }}/cesi-eats/third-party-dev-service:latest|ghcr.io/${{ env.OWNER }}/cesi-eats/third-party-dev-service:sha-$COMMIT_SHA|g" k8s/combined-deployment.yaml
+
+          cat k8s/combined-deployment.yaml
+
+      - name: Deploy to Kubernetes
+        env:
+          KUBECONFIG: ${{ github.workspace }}/kubeconfig.yaml
+        run: |
+          # Delete existing deployment if it exists
+          kubectl delete deployment cesi-eats-app --ignore-not-found
+
+          # Apply the updated deployment
+          kubectl apply -f k8s/combined-deployment.yaml
+
+          # Wait for deployment to complete
+          kubectl rollout status deployment/cesi-eats-app
+
+      - name: Debug deployment
+        env:
+          KUBECONFIG: ${{ github.workspace }}/kubeconfig.yaml
+        run: |
+          echo "Checking deployment status..."
+          kubectl get deployment cesi-eats-app -o yaml
+          echo "\nChecking pods..."
+          kubectl get pods
+          echo "\nChecking services..."
+          kubectl get services
+          echo "\nDescribing pods..."
+          kubectl describe pods -l app=cesi-eats
