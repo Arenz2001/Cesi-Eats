@@ -212,7 +212,7 @@ spec:
       protocol: TCP
       port: 80
       targetPort: 3004
-      nodePort: 30004
+      nodePort: 31104
 
 ---
 apiVersion: v1
@@ -228,7 +228,7 @@ spec:
       protocol: TCP
       port: 80
       targetPort: 3001
-      nodePort: 30001
+      nodePort: 31101
 
 ---
 apiVersion: v1
@@ -244,7 +244,7 @@ spec:
       protocol: TCP
       port: 80
       targetPort: 3003
-      nodePort: 30003
+      nodePort: 31103
 
 ---
 apiVersion: v1
@@ -260,7 +260,7 @@ spec:
       protocol: TCP
       port: 80
       targetPort: 3002
-      nodePort: 30002
+      nodePort: 31102
 
 ---
 apiVersion: v1
@@ -276,7 +276,7 @@ spec:
       protocol: TCP
       port: 80
       targetPort: 3005
-      nodePort: 30005
+      nodePort: 31105
 
 ---
 apiVersion: v1
@@ -292,7 +292,7 @@ spec:
       protocol: TCP
       port: 80
       targetPort: 3006
-      nodePort: 30006
+      nodePort: 31106
 
 # Services for frontend
 ---
@@ -309,7 +309,7 @@ spec:
       protocol: TCP
       port: 80
       targetPort: 4000
-      nodePort: 31000
+      nodePort: 32000
 
 ---
 apiVersion: v1
@@ -325,7 +325,7 @@ spec:
       protocol: TCP
       port: 80
       targetPort: 4001
-      nodePort: 31001
+      nodePort: 32001
 
 ---
 apiVersion: v1
@@ -341,7 +341,7 @@ spec:
       protocol: TCP
       port: 80
       targetPort: 4002
-      nodePort: 31002
+      nodePort: 32002
 
 ---
 apiVersion: v1
@@ -357,7 +357,7 @@ spec:
       protocol: TCP
       port: 80
       targetPort: 4003
-      nodePort: 31003
+      nodePort: 32003
 
 ---
 apiVersion: v1
@@ -373,7 +373,7 @@ spec:
       protocol: TCP
       port: 80
       targetPort: 4004
-      nodePort: 31004
+      nodePort: 32004
 
 # Shared MongoDB storage
 ---
