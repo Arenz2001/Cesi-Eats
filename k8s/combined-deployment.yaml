@@ -23,9 +23,9 @@ spec:
               name: auth-http
           env:
             - name: MONGODB_URI
-              value: "mongodb://localhost:27017/cesi-eats"
+              value: "mongodb://localhost:27017/auth-service"
             - name: JWT_SECRET
-              value: "your-jwt-secret"
+              value: "cesieats_jwt_secret_key_2024"
             - name: JWT_EXPIRES_IN
               value: "1d"
             - name: PORT
@@ -38,7 +38,7 @@ spec:
               name: customer-http
           env:
             - name: MONGODB_URI
-              value: "mongodb://localhost:27017/cesi-eats"
+              value: "mongodb://localhost:27017/customer-service"
             - name: PORT
               value: "3001"
 
@@ -49,7 +49,7 @@ spec:
               name: order-http
           env:
             - name: MONGODB_URI
-              value: "mongodb://localhost:27017/cesi-eats"
+              value: "mongodb://localhost:27017/order-service"
             - name: PORT
               value: "3003"
 
@@ -60,7 +60,7 @@ spec:
               name: restaurant-http
           env:
             - name: MONGODB_URI
-              value: "mongodb://localhost:27017/cesi-eats"
+              value: "mongodb://localhost:27017/restaurant-service"
             - name: PORT
               value: "3002"
 
@@ -71,7 +71,7 @@ spec:
               name: delivery-http
           env:
             - name: MONGODB_URI
-              value: "mongodb://localhost:27017/cesi-eats"
+              value: "mongodb://localhost:27017/delivery-service"
             - name: PORT
               value: "3005"
 
@@ -82,7 +82,7 @@ spec:
               name: tps-http
           env:
             - name: MONGODB_URI
-              value: "mongodb://localhost:27017/cesi-eats"
+              value: "mongodb://localhost:27017/third-party-dev-service"
             - name: PORT
               value: "3006"
 
