@@ -17,7 +17,7 @@ spec:
       containers:
         # Backend services
         - name: auth-service
-          image: ghcr.io/Arenz2001/cesi-eats/auth-service:latest
+          image: ghcr.io/arenz2001/cesi-eats/auth-service:latest
           ports:
             - containerPort: 3004
               name: auth-http
@@ -32,7 +32,7 @@ spec:
               value: "3004"
 
         - name: customer-service
-          image: ghcr.io/Arenz2001/cesi-eats/customer-service:latest
+          image: ghcr.io/arenz2001/cesi-eats/customer-service:latest
           ports:
             - containerPort: 3001
               name: customer-http
@@ -43,7 +43,7 @@ spec:
               value: "3001"
 
         - name: order-service
-          image: ghcr.io/Arenz2001/cesi-eats/order-service:latest
+          image: ghcr.io/arenz2001/cesi-eats/order-service:latest
           ports:
             - containerPort: 3003
               name: order-http
@@ -54,7 +54,7 @@ spec:
               value: "3003"
 
         - name: restaurant-service
-          image: ghcr.io/Arenz2001/cesi-eats/restaurant-service:latest
+          image: ghcr.io/arenz2001/cesi-eats/restaurant-service:latest
           ports:
             - containerPort: 3002
               name: restaurant-http
@@ -65,7 +65,7 @@ spec:
               value: "3002"
 
         - name: delivery-service
-          image: ghcr.io/Arenz2001/cesi-eats/delivery-service:latest
+          image: ghcr.io/arenz2001/cesi-eats/delivery-service:latest
           ports:
             - containerPort: 3005
               name: delivery-http
@@ -76,7 +76,7 @@ spec:
               value: "3005"
 
         - name: third-party-dev-service
-          image: ghcr.io/Arenz2001/cesi-eats/third-party-dev-service:latest
+          image: ghcr.io/arenz2001/cesi-eats/third-party-dev-service:latest
           ports:
             - containerPort: 3006
               name: tps-http
@@ -88,7 +88,7 @@ spec:
 
         # Frontend applications
         - name: customer-app
-          image: ghcr.io/Arenz2001/cesi-eats/customer-app:latest
+          image: ghcr.io/arenz2001/cesi-eats/customer-app:latest
           ports:
             - containerPort: 4000
               name: cust-app-http
@@ -107,7 +107,7 @@ spec:
               value: "http://localhost:3006"
 
         - name: delivery-app
-          image: ghcr.io/Arenz2001/cesi-eats/delivery-app:latest
+          image: ghcr.io/arenz2001/cesi-eats/delivery-app:latest
           ports:
             - containerPort: 4001
               name: deliv-app-http
@@ -126,7 +126,7 @@ spec:
               value: "http://localhost:3006"
 
         - name: commercial-app
-          image: ghcr.io/Arenz2001/cesi-eats/commercial-app:latest
+          image: ghcr.io/arenz2001/cesi-eats/commercial-app:latest
           ports:
             - containerPort: 4002
               name: comm-app-http
@@ -145,7 +145,7 @@ spec:
               value: "http://localhost:3006"
 
         - name: restaurant-app
-          image: ghcr.io/Arenz2001/cesi-eats/restaurant-app:latest
+          image: ghcr.io/arenz2001/cesi-eats/restaurant-app:latest
           ports:
             - containerPort: 4003
               name: rest-app-http
@@ -164,7 +164,7 @@ spec:
               value: "http://localhost:3006"
 
         - name: third-party-dev-app
-          image: ghcr.io/Arenz2001/cesi-eats/third-party-dev-app:latest
+          image: ghcr.io/arenz2001/cesi-eats/third-party-dev-app:latest
           ports:
             - containerPort: 4004
               name: tpd-app-http
