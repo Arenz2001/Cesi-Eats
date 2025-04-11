@@ -91,7 +91,7 @@ spec:
           image: ghcr.io/Arenz2001/cesi-eats/customer-app:latest
           ports:
             - containerPort: 4000
-              name: customer-app-http
+              name: cust-app-http
           env:
             - name: NEXT_PUBLIC_AUTH_API_URL
               value: "http://localhost:3004/"
@@ -110,7 +110,7 @@ spec:
           image: ghcr.io/Arenz2001/cesi-eats/delivery-app:latest
           ports:
             - containerPort: 4001
-              name: delivery-app-http
+              name: deliv-app-http
           env:
             - name: NEXT_PUBLIC_AUTH_API_URL
               value: "http://localhost:3004/"
@@ -129,7 +129,7 @@ spec:
           image: ghcr.io/Arenz2001/cesi-eats/commercial-app:latest
           ports:
             - containerPort: 4002
-              name: commercial-app-http
+              name: comm-app-http
           env:
             - name: NEXT_PUBLIC_AUTH_API_URL
               value: "http://localhost:3004/"
@@ -148,7 +148,7 @@ spec:
           image: ghcr.io/Arenz2001/cesi-eats/restaurant-app:latest
           ports:
             - containerPort: 4003
-              name: restaurant-app-http
+              name: rest-app-http
           env:
             - name: NEXT_PUBLIC_AUTH_API_URL
               value: "http://localhost:3004/"
